@@ -332,11 +332,10 @@ function showInteractivePopup(text, patterns = {}) {
   if (hasCardNumbers) {
     let match;
     while ((match = patterns.creditCard.exec(text)) !== null) {
-      const masked = maskCardNumber(match[0]);
       const newMatch = {
         start: match.index,
         end: match.index + match[0].length,
-        replacement: `<mark style="background-color: #FFF3F3; color: #E53935; padding: 2px 4px; border-radius: 2px; font-weight: normal;">${masked}</mark>`,
+        replacement: `<mark style="background-color: #FFF3F3; color: #E53935; padding: 2px 4px; border-radius: 2px; font-weight: normal;">${match[0]}</mark>`,
         original: match[0],
         priority: 10 // Higher priority for credit cards
       };
@@ -352,11 +351,10 @@ function showInteractivePopup(text, patterns = {}) {
   if (hasPhoneNumbers) {
     let match;
     while ((match = patterns.phone.exec(text)) !== null) {
-      const masked = maskPhoneNumber(match[0]);
       const newMatch = {
         start: match.index,
         end: match.index + match[0].length,
-        replacement: `<mark style="background-color: #E8F4FD; color: #1976D2; padding: 2px 4px; border-radius: 2px; font-weight: normal;">${masked}</mark>`,
+        replacement: `<mark style="background-color: #E8F4FD; color: #1976D2; padding: 2px 4px; border-radius: 2px; font-weight: normal;">${match[0]}</mark>`,
         original: match[0],
         priority: 5
       };
@@ -372,11 +370,10 @@ function showInteractivePopup(text, patterns = {}) {
   if (hasSSNs) {
     let match;
     while ((match = patterns.ssn.exec(text)) !== null) {
-      const masked = maskSSN(match[0]);
       const newMatch = {
         start: match.index,
         end: match.index + match[0].length,
-        replacement: `<mark style="background-color: #F5F0FC; color: #7B1FA2; padding: 2px 4px; border-radius: 2px; font-weight: normal;">${masked}</mark>`,
+        replacement: `<mark style="background-color: #F5F0FC; color: #7B1FA2; padding: 2px 4px; border-radius: 2px; font-weight: normal;">${match[0]}</mark>`,
         original: match[0],
         priority: 15 // Highest priority for SSNs
       };

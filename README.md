@@ -7,6 +7,7 @@ Extension to block pasting PII (Personally Identifiable Information) in ChatGPT,
 - Detects and blocks credit card numbers in pasted content
 - Detects and blocks phone numbers in various international formats
 - Detects and blocks Social Security Numbers (SSNs) in pasted content
+- Support for custom regex patterns to detect additional types of sensitive information
 - Multiple operational modes:
   - Interactive: Shows a popup with highlighted sensitive information and asks for confirmation
   - Block and Alert: Automatically blocks and shows a notification
@@ -17,7 +18,7 @@ Extension to block pasting PII (Personally Identifiable Information) in ChatGPT,
 ## Screenshots
 
 1. Interactive Module for Blocking or Allowing
-![image](https://github.com/user-attachments/assets/d10f8632-8487-4bbc-9091-998edb5c74db)
+![image](https://github.com/user-attachments/assets/8032b8a1-97bd-4ec4-ba93-ecf35391bb10)
 
 2. Notifications for other modes if paste is directly blocked or detected in alert mode
 Block Mode
@@ -27,7 +28,7 @@ Alert Mode
 ![image](https://github.com/user-attachments/assets/228d4ac7-3526-4782-a4f2-b9169d670e20)
 
 3. Configuration changes from the options mode for blocking or interactive mode
-![image](https://github.com/user-attachments/assets/c3bab661-6d06-4b20-b2d1-69769e5677f6)
+![image](https://github.com/user-attachments/assets/58c0d2cd-337c-4e48-b3c0-77ccc031ae29)
 
 ## How it works
 
@@ -39,6 +40,7 @@ The extension monitors paste events on web pages and checks for patterns that ma
 - **Credit Card Numbers**: Major card formats (Visa, Mastercard, Amex, etc.) with or without spaces/dashes
 - **Phone Numbers**: Various international formats with different separators and country codes
 - **Social Security Numbers**: US SSN formats (XXX-XX-XXXX, XXX XX XXXX, or XXXXXXXXX) with validation rules
+- **Custom Patterns**: User-defined regex patterns for detecting specific types of sensitive information
 
 ## Installation
 
@@ -51,4 +53,17 @@ Load the extension in your browser:
 
 - ChatGPT (https://chatgpt.com/*)
 - Claude AI (https://claude.ai/*)
+
+## Configuration Options
+
+Access the extension options to customize how OptimusPII works:
+
+1. **Operation Mode**: Select how the extension should respond to detected PII
+   - Interactive mode provides a detailed popup showing detected information
+   - Other modes provide varying levels of blocking and notifications
+
+2. **Custom Detection Patterns**: Add your own regex patterns to detect specific types of sensitive information
+   - Name your pattern (e.g., "API Key", "Database Password")
+   - Provide a regex pattern to match the sensitive information
+   - Patterns can be added, edited, or removed through the options page
 

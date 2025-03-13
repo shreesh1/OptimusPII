@@ -1,0 +1,74 @@
+// options.html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Email Paste Blocker Options</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #333;
+    }
+    
+    .option {
+      margin-bottom: 10px;
+    }
+    
+    button {
+      margin-top: 20px;
+      padding: 8px 15px;
+      background-color: #0060df;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background-color: #003eaa;
+    }
+    
+    .status {
+      margin-top: 10px;
+      padding: 5px;
+      color: green;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+  </style>
+</head>
+<body>
+  <h1>Email Paste Blocker Settings</h1>
+  
+  <div class="option">
+    <input type="radio" id="block-and-alert" name="mode" value="block-and-alert">
+    <label for="block-and-alert">Block paste and show alert (recommended)</label>
+  </div>
+  
+  <div class="option">
+    <input type="radio" id="alert-only" name="mode" value="alert-only">
+    <label for="alert-only">Show alert only (allow paste)</label>
+  </div>
+  
+  <div class="option">
+    <input type="radio" id="silent-block" name="mode" value="silent-block">
+    <label for="silent-block">Block paste silently (no alert)</label>
+  </div>
+  
+  <div class="option">
+    <input type="radio" id="disabled" name="mode" value="disabled">
+    <label for="disabled">Disable extension completely</label>
+  </div>
+  
+  <button id="save">Save</button>
+  
+  <div id="status" class="status">Settings saved!</div>
+  
+  <script src="options.js"></script>
+</body>
+</html>

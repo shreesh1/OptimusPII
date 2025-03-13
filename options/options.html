@@ -1,4 +1,3 @@
-// options.html
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,14 +8,37 @@
       padding: 20px;
       max-width: 600px;
       margin: 0 auto;
+      color: #333;
     }
     
     h1 {
       color: #333;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
     }
     
     .option {
-      margin-bottom: 10px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: flex-start;
+    }
+    
+    .option input {
+      margin-top: 4px;
+    }
+    
+    .option-content {
+      margin-left: 10px;
+    }
+    
+    .option-title {
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+    
+    .option-description {
+      color: #666;
+      font-size: 14px;
     }
     
     button {
@@ -27,6 +49,7 @@
       border: none;
       border-radius: 4px;
       cursor: pointer;
+      font-weight: bold;
     }
     
     button:hover {
@@ -40,34 +63,72 @@
       opacity: 0;
       transition: opacity 0.5s;
     }
+    
+    .setting-group {
+      background-color: #f9f9f9;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      border: 1px solid #eee;
+    }
+    
+    .setting-group h2 {
+      margin-top: 0;
+      font-size: 18px;
+      color: #555;
+    }
   </style>
 </head>
 <body>
   <h1>Email Paste Blocker Settings</h1>
   
-  <div class="option">
-    <input type="radio" id="block-and-alert" name="mode" value="block-and-alert">
-    <label for="block-and-alert">Block paste and show alert (recommended)</label>
+  <div class="setting-group">
+    <h2>Operation Mode</h2>
+    
+    <div class="option">
+      <input type="radio" id="interactive" name="mode" value="interactive">
+      <div class="option-content">
+        <label class="option-title" for="interactive">Interactive (Recommended)</label>
+        <div class="option-description">Show a popup with highlighted emails and ask for confirmation</div>
+      </div>
+    </div>
+    
+    <div class="option">
+      <input type="radio" id="block-and-alert" name="mode" value="block-and-alert">
+      <div class="option-content">
+        <label class="option-title" for="block-and-alert">Block paste and show alert</label>
+        <div class="option-description">Automatically blocks paste operations with emails and shows a notification</div>
+      </div>
+    </div>
+    
+    <div class="option">
+      <input type="radio" id="alert-only" name="mode" value="alert-only">
+      <div class="option-content">
+        <label class="option-title" for="alert-only">Show alert only</label>
+        <div class="option-description">Allows paste but shows a warning notification when an email is detected</div>
+      </div>
+    </div>
+    
+    <div class="option">
+      <input type="radio" id="silent-block" name="mode" value="silent-block">
+      <div class="option-content">
+        <label class="option-title" for="silent-block">Block paste silently</label>
+        <div class="option-description">Blocks paste operations with emails but doesn't show any notification</div>
+      </div>
+    </div>
+    
+    <div class="option">
+      <input type="radio" id="disabled" name="mode" value="disabled">
+      <div class="option-content">
+        <label class="option-title" for="disabled">Disable extension</label>
+        <div class="option-description">Completely turns off all email detection functionality</div>
+      </div>
+    </div>
   </div>
   
-  <div class="option">
-    <input type="radio" id="alert-only" name="mode" value="alert-only">
-    <label for="alert-only">Show alert only (allow paste)</label>
-  </div>
+  <button id="save">Save Settings</button>
   
-  <div class="option">
-    <input type="radio" id="silent-block" name="mode" value="silent-block">
-    <label for="silent-block">Block paste silently (no alert)</label>
-  </div>
-  
-  <div class="option">
-    <input type="radio" id="disabled" name="mode" value="disabled">
-    <label for="disabled">Disable extension completely</label>
-  </div>
-  
-  <button id="save">Save</button>
-  
-  <div id="status" class="status">Settings saved!</div>
+  <div id="status" class="status">Settings saved successfully!</div>
   
   <script src="options.js"></script>
 </body>

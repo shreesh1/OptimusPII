@@ -21,6 +21,10 @@ let config = {
     }
   });
   
+  // Store pending paste event for interactive mode
+  let pendingPasteEvent = null;
+  let popupDismissTimeout = null;
+  
   function handlePaste(event) {
     // If the extension is disabled, do nothing
     if (config.mode === "disabled") {
@@ -39,20 +43,38 @@ let config = {
       // Log the detection (happens in all non-disabled modes)
       console.log('Email detected in paste:', pastedText);
       
-      // Block paste if mode is not "alert-only"
-      if (config.mode !== "alert-only") {
-        event.preventDefault();
-        event.stopPropagation();
+      // Handle based on mode
+      switch(config.mode) {
+        case "interactive":
+          // Prevent default action until user decision
+          event.preventDefault();
+          event.stopPropagation();
+          
+          // Store the event for later use if user allows paste
+          pendingPasteEvent = {
+            targetElement: event.target,
+            text: pastedText
+          };
+          
+          // Show interactive popup with highlighted emails
+          showInteractivePopup(pastedText, emailRegex);
+          return false;
+          
+        case "block-and-alert":
+          event.preventDefault();
+          event.stopPropagation();
+          showNotification('Paste blocked: Email address detected');
+          return false;
+          
+        case "alert-only":
+          showNotification('Warning: Email address detected in paste');
+          return true;
+          
+        case "silent-block":
+          event.preventDefault();
+          event.stopPropagation();
+          return false;
       }
-      
-      // Show notification if mode includes alerts
-      if (config.mode === "block-and-alert" || config.mode === "alert-only") {
-        showNotification(config.mode === "block-and-alert" ? 
-          'Paste blocked: Email address detected' : 
-          'Warning: Email address detected in paste');
-      }
-      
-      return false;
     }
     return true;
   }
@@ -82,6 +104,206 @@ let config = {
       notification.style.transition = 'opacity 0.5s';
       setTimeout(() => notification.remove(), 500);
     }, 3000);
+  }
+  
+  function showInteractivePopup(text, emailRegex) {
+    // Remove any existing popup
+    const existingPopup = document.getElementById('email-blocker-popup');
+    if (existingPopup) {
+      existingPopup.remove();
+    }
+    
+    // Clear any existing timeout
+    if (popupDismissTimeout) {
+      clearTimeout(popupDismissTimeout);
+    }
+    
+    // Create popup container
+    const popup = document.createElement('div');
+    popup.id = 'email-blocker-popup';
+    popup.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      z-index: 10001;
+      width: 450px;
+      max-width: 90vw;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      font-family: Arial, sans-serif;
+    `;
+    
+    // Create popup header
+    const header = document.createElement('div');
+    header.style.cssText = `
+      background-color: #ff4d4d;
+      color: white;
+      padding: 12px 15px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    `;
+    header.textContent = 'Email Detected in Clipboard';
+    
+    const closeButton = document.createElement('button');
+    closeButton.textContent = '✕';
+    closeButton.style.cssText = `
+      background: none;
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0 5px;
+    `;
+    closeButton.addEventListener('click', () => {
+      popup.remove();
+      pendingPasteEvent = null;
+    });
+    header.appendChild(closeButton);
+    
+    // Create content area
+    const content = document.createElement('div');
+    content.style.cssText = `
+      padding: 15px;
+      overflow-y: auto;
+      max-height: 300px;
+    `;
+    
+    // Highlight emails in content
+    const highlightedContent = document.createElement('pre');
+    highlightedContent.style.cssText = `
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: monospace;
+      border: 1px solid #ddd;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+    `;
+    
+    // Replace email addresses with highlighted spans
+    const highlightedText = text.replace(emailRegex, match => 
+      `<span style="background-color: #ffeb3b; font-weight: bold; padding: 2px 4px; border-radius: 2px;">${match}</span>`
+    );
+    highlightedContent.innerHTML = highlightedText;
+    
+    content.appendChild(document.createTextNode('The following paste contains email addresses:'));
+    content.appendChild(document.createElement('br'));
+    content.appendChild(document.createElement('br'));
+    content.appendChild(highlightedContent);
+    
+    // Create action buttons
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.cssText = `
+      padding: 15px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      border-top: 1px solid #eee;
+    `;
+    
+    const blockButton = document.createElement('button');
+    blockButton.textContent = 'Block Paste';
+    blockButton.style.cssText = `
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    `;
+    blockButton.addEventListener('click', () => {
+      popup.remove();
+      pendingPasteEvent = null;
+      showNotification('Paste blocked: Email address detected');
+    });
+    
+    const allowButton = document.createElement('button');
+    allowButton.textContent = 'Allow Paste';
+    allowButton.style.cssText = `
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    `;
+    allowButton.addEventListener('click', () => {
+      popup.remove();
+      
+      // Execute the paste if we have saved event data
+      if (pendingPasteEvent && pendingPasteEvent.targetElement) {
+        // For input and textarea elements
+        if (pendingPasteEvent.targetElement.tagName === 'INPUT' || 
+            pendingPasteEvent.targetElement.tagName === 'TEXTAREA') {
+          
+          const start = pendingPasteEvent.targetElement.selectionStart || 0;
+          const end = pendingPasteEvent.targetElement.selectionEnd || 0;
+          const value = pendingPasteEvent.targetElement.value || '';
+          
+          // Insert text at cursor position
+          pendingPasteEvent.targetElement.value = 
+            value.substring(0, start) + 
+            pendingPasteEvent.text + 
+            value.substring(end);
+          
+          // Move cursor after inserted text
+          pendingPasteEvent.targetElement.selectionStart = 
+          pendingPasteEvent.targetElement.selectionEnd = 
+            start + pendingPasteEvent.text.length;
+            
+        } else if (pendingPasteEvent.targetElement.isContentEditable) {
+          // For contenteditable elements
+          const selection = window.getSelection();
+          const range = selection.getRangeAt(0);
+          range.deleteContents();
+          
+          const textNode = document.createTextNode(pendingPasteEvent.text);
+          range.insertNode(textNode);
+          
+          // Move cursor after inserted text
+          range.setStartAfter(textNode);
+          range.setEndAfter(textNode);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      }
+      
+      pendingPasteEvent = null;
+      showNotification('Paste allowed');
+    });
+    
+    buttonContainer.appendChild(blockButton);
+    buttonContainer.appendChild(allowButton);
+    
+    // Assemble popup
+    popup.appendChild(header);
+    popup.appendChild(content);
+    popup.appendChild(buttonContainer);
+    
+    // Add popup to body
+    document.body.appendChild(popup);
+    
+    // Auto-dismiss after 10 seconds if no action
+    popupDismissTimeout = setTimeout(() => {
+      if (document.body.contains(popup)) {
+        popup.remove();
+        pendingPasteEvent = null;
+        showNotification('Paste blocked (timed out)');
+      }
+    }, 10000);
   }
   
   // Add global paste event listener

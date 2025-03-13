@@ -20,8 +20,8 @@ function saveOptions(e) {
   
   function restoreOptions() {
     browser.storage.local.get('mode').then((result) => {
-      // Default to "block-and-alert" if not set
-      const mode = result.mode || 'block-and-alert';
+      // Default to "interactive" if not set
+      const mode = result.mode || 'interactive';
       document.querySelector(`input[value="${mode}"]`).checked = true;
     });
   }

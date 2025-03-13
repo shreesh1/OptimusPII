@@ -2,7 +2,7 @@
 
 // Default configuration
 let config = {
-    mode: "block-and-alert"
+    mode: "interactive"
   };
   
   // Load configuration from storage
@@ -43,19 +43,24 @@ let config = {
     
     // Regex to detect phone numbers (various formats including international)
     const phoneRegex = /(?:\+\d{1,3}[\s-]?)?\(?(?:\d{1,4})\)?[\s.-]?\d{1,4}[\s.-]?\d{1,9}/g;
+
+    // Regex to detect SSNs (formats: XXX-XX-XXXX, XXX XX XXXX, XXXXXXXXX)
+    const ssnRegex = /\b(?!000|666|9\d{2})([0-8]\d{2}|7([0-6]\d|7[012]))([-\s]?)(?!00)\d\d\3(?!0000)\d{4}\b/g;
     
-    // Find all emails, credit card numbers, and phone numbers
+    // Find all sensitive data
     const emails = pastedText.match(emailRegex) || [];
     const creditCards = pastedText.match(creditCardRegex) || [];
     const phoneNumbers = pastedText.match(phoneRegex) || [];
+    const ssns = pastedText.match(ssnRegex) || [];
     
     // Check if the pasted content contains sensitive data
-    if (emails.length > 0 || creditCards.length > 0 || phoneNumbers.length > 0) {
+    if (emails.length > 0 || creditCards.length > 0 || phoneNumbers.length > 0 || ssns.length > 0) {
       // Determine the type of PII for notification messages
       const piiTypes = [];
       if (emails.length > 0) piiTypes.push("email");
       if (creditCards.length > 0) piiTypes.push("credit card");
       if (phoneNumbers.length > 0) piiTypes.push("phone number");
+      if (ssns.length > 0) piiTypes.push("SSN");
       const piiMessage = piiTypes.join(", ").replace(/,([^,]*)$/, " and$1");
       
       // Log the detection (happens in all non-disabled modes)
@@ -75,7 +80,7 @@ let config = {
           };
           
           // Show interactive popup with highlighted sensitive data
-          showInteractivePopup(pastedText, emailRegex, creditCardRegex, phoneRegex);
+          showInteractivePopup(pastedText, emailRegex, creditCardRegex, phoneRegex, ssnRegex);
           return false;
           
         case "block-and-alert":
@@ -124,7 +129,7 @@ let config = {
     }, 3000);
   }
   
-  function showInteractivePopup(text, emailRegex, creditCardRegex, phoneRegex) {
+  function showInteractivePopup(text, emailRegex, creditCardRegex, phoneRegex, ssnRegex) {
     // Remove any existing popup
     const existingPopup = document.getElementById('pii-blocker-popup');
     if (existingPopup) {
@@ -161,12 +166,14 @@ let config = {
     const hasEmails = text.match(emailRegex) !== null;
     const hasCardNumbers = text.match(creditCardRegex) !== null;
     const hasPhoneNumbers = text.match(phoneRegex) !== null;
+    const hasSSNs = text.match(ssnRegex) !== null;
     
     let headerText = 'Sensitive Information Detected';
-    if (hasEmails && !hasCardNumbers && !hasPhoneNumbers) headerText = 'Email Address Detected';
-    if (!hasEmails && hasCardNumbers && !hasPhoneNumbers) headerText = 'Credit Card Number Detected';
-    if (!hasEmails && !hasCardNumbers && hasPhoneNumbers) headerText = 'Phone Number Detected';
-    if (hasEmails || hasCardNumbers || hasPhoneNumbers) headerText = 'Multiple PII Types Detected';
+    if (hasEmails && !hasCardNumbers && !hasPhoneNumbers && !hasSSNs) headerText = 'Email Address Detected';
+    if (!hasEmails && hasCardNumbers && !hasPhoneNumbers && !hasSSNs) headerText = 'Credit Card Number Detected';
+    if (!hasEmails && !hasCardNumbers && hasPhoneNumbers && !hasSSNs) headerText = 'Phone Number Detected';
+    if (!hasEmails && !hasCardNumbers && !hasPhoneNumbers && hasSSNs) headerText = 'Social Security Number Detected';
+    if ((hasEmails ? 1 : 0) + (hasCardNumbers ? 1 : 0) + (hasPhoneNumbers ? 1 : 0) + (hasSSNs ? 1 : 0) > 1) headerText = 'Multiple PII Types Detected';
     
     // Create popup header with softer color
     const header = document.createElement('div');
@@ -234,7 +241,14 @@ let config = {
       return `(***) ***-${lastFourDigits}`;
     }
     
-    // Replace emails and credit card numbers with highlighted spans
+    // Function to mask SSN (show only last 4 digits)
+    function maskSSN(ssn) {
+      const digits = ssn.replace(/\D/g, '');
+      const lastFourDigits = digits.slice(-4);
+      return `***-**-${lastFourDigits}`;
+    }
+    
+    // Replace sensitive information with highlighted spans
     let highlightedText = text;
     
     // First replace credit cards (to avoid overlap issues)
@@ -253,6 +267,14 @@ let config = {
       });
     }
     
+    // Then replace SSNs
+    if (hasSSNs) {
+      highlightedText = highlightedText.replace(ssnRegex, match => {
+        const masked = maskSSN(match);
+        return `<span style="background-color: #e8daef; font-weight: bold; padding: 2px 4px; border-radius: 2px;">${masked}</span>`;
+      });
+    }
+    
     // Then replace emails
     if (hasEmails) {
       highlightedText = highlightedText.replace(emailRegex, match => 
@@ -266,6 +288,7 @@ let config = {
     if (hasEmails) detectedTypes.push("email addresses");
     if (hasCardNumbers) detectedTypes.push("credit card numbers");
     if (hasPhoneNumbers) detectedTypes.push("phone numbers");
+    if (hasSSNs) detectedTypes.push("social security numbers");
     
     content.appendChild(document.createTextNode(`The following paste contains ${detectedTypes.join(", ").replace(/,([^,]*)$/, " and$1")}:`));
     

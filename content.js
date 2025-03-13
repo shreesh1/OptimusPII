@@ -41,17 +41,22 @@ let config = {
     // Regex to detect credit card numbers (supports major card formats with or without spaces/dashes)
     const creditCardRegex = /(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|6(?:011|5[0-9]{2})[0-9]{12}|(?:2131|1800|35\d{3})\d{11}|(?:(?:5[0678]\d\d|6304|6390|67\d\d)\d{8,15}))([-\s]?[0-9]{4})?/g;
     
-    // Find all emails and credit card numbers
+    // Regex to detect phone numbers (various formats including international)
+    const phoneRegex = /(?:\+\d{1,3}[\s-]?)?\(?(?:\d{1,4})\)?[\s.-]?\d{1,4}[\s.-]?\d{1,9}/g;
+    
+    // Find all emails, credit card numbers, and phone numbers
     const emails = pastedText.match(emailRegex) || [];
     const creditCards = pastedText.match(creditCardRegex) || [];
+    const phoneNumbers = pastedText.match(phoneRegex) || [];
     
     // Check if the pasted content contains sensitive data
-    if (emails.length > 0 || creditCards.length > 0) {
+    if (emails.length > 0 || creditCards.length > 0 || phoneNumbers.length > 0) {
       // Determine the type of PII for notification messages
       const piiTypes = [];
       if (emails.length > 0) piiTypes.push("email");
       if (creditCards.length > 0) piiTypes.push("credit card");
-      const piiMessage = piiTypes.join(" and ");
+      if (phoneNumbers.length > 0) piiTypes.push("phone number");
+      const piiMessage = piiTypes.join(", ").replace(/,([^,]*)$/, " and$1");
       
       // Log the detection (happens in all non-disabled modes)
       console.log(`${piiMessage} detected in paste:`, pastedText);
@@ -70,7 +75,7 @@ let config = {
           };
           
           // Show interactive popup with highlighted sensitive data
-          showInteractivePopup(pastedText, emailRegex, creditCardRegex);
+          showInteractivePopup(pastedText, emailRegex, creditCardRegex, phoneRegex);
           return false;
           
         case "block-and-alert":
@@ -119,7 +124,7 @@ let config = {
     }, 3000);
   }
   
-  function showInteractivePopup(text, emailRegex, creditCardRegex) {
+  function showInteractivePopup(text, emailRegex, creditCardRegex, phoneRegex) {
     // Remove any existing popup
     const existingPopup = document.getElementById('pii-blocker-popup');
     if (existingPopup) {
@@ -155,11 +160,13 @@ let config = {
     // Determine what types of PII were detected
     const hasEmails = text.match(emailRegex) !== null;
     const hasCardNumbers = text.match(creditCardRegex) !== null;
+    const hasPhoneNumbers = text.match(phoneRegex) !== null;
     
     let headerText = 'Sensitive Information Detected';
-    if (hasEmails && !hasCardNumbers) headerText = 'Email Address Detected';
-    if (!hasEmails && hasCardNumbers) headerText = 'Credit Card Number Detected';
-    if (hasEmails && hasCardNumbers) headerText = 'Email and Credit Card Detected';
+    if (hasEmails && !hasCardNumbers && !hasPhoneNumbers) headerText = 'Email Address Detected';
+    if (!hasEmails && hasCardNumbers && !hasPhoneNumbers) headerText = 'Credit Card Number Detected';
+    if (!hasEmails && !hasCardNumbers && hasPhoneNumbers) headerText = 'Phone Number Detected';
+    if (hasEmails || hasCardNumbers || hasPhoneNumbers) headerText = 'Multiple PII Types Detected';
     
     // Create popup header with softer color
     const header = document.createElement('div');
@@ -220,6 +227,13 @@ let config = {
       return `****-****-****-${lastFourDigits}`;
     }
     
+    // Function to mask phone number (show only last 4 digits)
+    function maskPhoneNumber(phoneNumber) {
+      const digits = phoneNumber.replace(/\D/g, '');
+      const lastFourDigits = digits.slice(-4);
+      return `(***) ***-${lastFourDigits}`;
+    }
+    
     // Replace emails and credit card numbers with highlighted spans
     let highlightedText = text;
     
@@ -228,6 +242,14 @@ let config = {
       highlightedText = highlightedText.replace(creditCardRegex, match => {
         const masked = maskCardNumber(match);
         return `<span style="background-color: #fdebd0; font-weight: bold; padding: 2px 4px; border-radius: 2px;">${masked}</span>`;
+      });
+    }
+    
+    // Then replace phone numbers
+    if (hasPhoneNumbers) {
+      highlightedText = highlightedText.replace(phoneRegex, match => {
+        const masked = maskPhoneNumber(match);
+        return `<span style="background-color: #d6eaf8; font-weight: bold; padding: 2px 4px; border-radius: 2px;">${masked}</span>`;
       });
     }
     
@@ -243,8 +265,10 @@ let config = {
     const detectedTypes = [];
     if (hasEmails) detectedTypes.push("email addresses");
     if (hasCardNumbers) detectedTypes.push("credit card numbers");
+    if (hasPhoneNumbers) detectedTypes.push("phone numbers");
     
-    content.appendChild(document.createTextNode(`The following paste contains ${detectedTypes.join(" and ")}:`));
+    content.appendChild(document.createTextNode(`The following paste contains ${detectedTypes.join(", ").replace(/,([^,]*)$/, " and$1")}:`));
+    
     content.appendChild(document.createElement('br'));
     content.appendChild(document.createElement('br'));
     content.appendChild(highlightedContent);

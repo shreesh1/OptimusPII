@@ -31,3 +31,9 @@ Load the extension in your browser:
 
 1. Chrome/Edge: Go to Extensions > Load unpacked > Select the extension folder
 2. Firefox: Go to about:debugging > This Firefox > Load Temporary Add-on > Select manifest.json
+
+## Supported Websites
+
+- ChatGPT (https://chatgpt.com/*)
+- Claude AI (https://claude.ai/*)
+

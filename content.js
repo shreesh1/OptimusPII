@@ -293,24 +293,6 @@ function showInteractivePopup(text, patterns = {}) {
     color: #333;
   `;
 
-  // Functions for masking sensitive data
-  function maskCardNumber(cardNumber) {
-    const lastFourDigits = cardNumber.replace(/\D/g, '').slice(-4);
-    return `****-****-****-${lastFourDigits}`;
-  }
-
-  function maskPhoneNumber(phoneNumber) {
-    const digits = phoneNumber.replace(/\D/g, '');
-    const lastFourDigits = digits.slice(-4);
-    return `(***) ***-${lastFourDigits}`;
-  }
-
-  function maskSSN(ssn) {
-    const digits = ssn.replace(/\D/g, '');
-    const lastFourDigits = digits.slice(-4);
-    return `***-**-${lastFourDigits}`;
-  }
-
   // Replace sensitive information with highlighted spans
   let highlightedText = text;
   

@@ -3,18 +3,20 @@
 // Default configuration
 let config = {
   mode: "interactive",
-  customRegexPatterns: {} // Add storage for custom patterns
+  regexPatterns: {} // Will contain both default and custom patterns
 };
 
 // Load configuration from storage
-browser.storage.local.get(['mode', 'customRegexPatterns']).then((result) => {
+browser.storage.local.get(['mode', 'regexPatterns']).then((result) => {
   if (result.mode) {
     config.mode = result.mode;
     console.log('PII blocker mode:', config.mode);
   }
-  if (result.customRegexPatterns) {
-    config.customRegexPatterns = result.customRegexPatterns;
-    console.log('Custom regex patterns loaded:', Object.keys(config.customRegexPatterns));
+  
+  // Load regex patterns or use defaults if not set
+  if (result.regexPatterns) {
+    config.regexPatterns = result.regexPatterns;
+    console.log('Regex patterns loaded:', Object.keys(config.regexPatterns));
   }
 });
 
@@ -25,9 +27,9 @@ browser.storage.onChanged.addListener((changes, area) => {
       config.mode = changes.mode.newValue;
       console.log('PII blocker mode updated:', config.mode);
     }
-    if (changes.customRegexPatterns) {
-      config.customRegexPatterns = changes.customRegexPatterns.newValue;
-      console.log('Custom regex patterns updated:', Object.keys(config.customRegexPatterns));
+    if (changes.regexPatterns) {
+      config.regexPatterns = changes.regexPatterns.newValue;
+      console.log('Regex patterns updated:', Object.keys(config.regexPatterns));
     }
   }
 });
@@ -46,64 +48,41 @@ function handlePaste(event) {
   const clipboardData = event.clipboardData || window.clipboardData;
   const pastedText = clipboardData.getData('text');
 
-  // Regex to detect email addresses
-  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+  // Prepare collection for regex patterns and matches
+  const patternObjects = {};
+  const matches = {};
+  let hasMatches = false;
 
-  // Regex to detect credit card numbers (supports major card formats with or without spaces/dashes)
-  const creditCardRegex = /(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|6(?:011|5[0-9]{2})[0-9]{12}|(?:2131|1800|35\d{3})\d{11}|(?:(?:5[0678]\d\d|6304|6390|67\d\d)\d{8,15}))([-\s]?[0-9]{4})?/g;
-
-  // Regex to detect phone numbers (various formats including international)
-  const phoneRegex = /(?:\+\d{1,3}[\s-]?)?\(?(?:\d{1,4})\)?[\s.-]?\d{1,4}[\s.-]?\d{1,9}/g;
-
-  // Regex to detect SSNs (formats: XXX-XX-XXXX, XXX XX XXXX, XXXXXXXXX)
-  const ssnRegex = /\b(?!000|666|9\d{2})([0-8]\d{2}|7([0-6]\d|7[012]))([-\s]?)(?!00)\d\d\3(?!0000)\d{4}\b/g;
-
-  // Prepare collection for custom regex matches
-  const customMatches = {};
-  
-  // Create RegExp objects from custom patterns
-  const customRegexes = {};
-  for (const [name, pattern] of Object.entries(config.customRegexPatterns)) {
+  // Process all enabled regex patterns
+  for (const [name, details] of Object.entries(config.regexPatterns)) {
+    // Skip disabled patterns
+    if (!details.enabled) continue;
+    
     try {
-      // Extract the pattern and flags if provided in format /pattern/flags
-      const patternMatch = pattern.match(/^\/(.*)\/([gimuy]*)$/);
+      // Create RegExp object from pattern string
+      const patternMatch = details.pattern.match(/^\/(.*)\/([gimuy]*)$/);
       if (patternMatch) {
-        customRegexes[name] = new RegExp(patternMatch[1], patternMatch[2] + 'g'); // Add 'g' flag if missing
+        patternObjects[name] = new RegExp(patternMatch[1], patternMatch[2] + 'g'); // Add 'g' flag if missing
       } else {
-        customRegexes[name] = new RegExp(pattern, 'g');
+        patternObjects[name] = new RegExp(details.pattern, 'g');
       }
-      customMatches[name] = pastedText.match(customRegexes[name]) || [];
+      
+      // Find matches
+      const foundMatches = pastedText.match(patternObjects[name]) || [];
+      if (foundMatches.length > 0) {
+        matches[name] = foundMatches;
+        hasMatches = true;
+      }
+      
     } catch (error) {
       console.error(`Invalid regex pattern for "${name}":`, error);
-      customMatches[name] = [];
     }
   }
 
-  // Find all sensitive data
-  const emails = pastedText.match(emailRegex) || [];
-  const creditCards = pastedText.match(creditCardRegex) || [];
-  const phoneNumbers = pastedText.match(phoneRegex) || [];
-  const ssns = pastedText.match(ssnRegex) || [];
-
-  // Check if any custom pattern matched
-  const hasCustomMatch = Object.values(customMatches).some(matches => matches.length > 0);
-
   // Check if the pasted content contains sensitive data
-  if (emails.length > 0 || creditCards.length > 0 || phoneNumbers.length > 0 || ssns.length > 0 || hasCustomMatch) {
-    // Determine the type of PII for notification messages
-    const piiTypes = [];
-    if (emails.length > 0) piiTypes.push("email");
-    if (creditCards.length > 0) piiTypes.push("credit card");
-    if (phoneNumbers.length > 0) piiTypes.push("phone number");
-    if (ssns.length > 0) piiTypes.push("SSN");
-    
-    // Add custom match types
-    for (const [name, matches] of Object.entries(customMatches)) {
-      if (matches.length > 0) {
-        piiTypes.push(name);
-      }
-    }
-    
+  if (hasMatches) {
+    // Determine the types of PII for notification messages
+    const piiTypes = Object.keys(matches).filter(key => matches[key].length > 0);
     const piiMessage = piiTypes.join(", ").replace(/,([^,]*)$/, " and$1");
 
     // Log the detection (happens in all non-disabled modes)
@@ -123,13 +102,7 @@ function handlePaste(event) {
         };
 
         // Show interactive popup with highlighted sensitive data
-        showInteractivePopup(pastedText, {
-          email: emailRegex,
-          creditCard: creditCardRegex,
-          phone: phoneRegex,
-          ssn: ssnRegex,
-          custom: customRegexes
-        });
+        showInteractivePopup(pastedText, patternObjects);
         return false;
 
       case "block-and-alert":
@@ -213,38 +186,13 @@ function showInteractivePopup(text, patterns = {}) {
   `;
 
   // Determine what types of PII were detected
-  const hasEmails = patterns.email && text.match(patterns.email) !== null;
-  const hasCardNumbers = patterns.creditCard && text.match(patterns.creditCard) !== null;
-  const hasPhoneNumbers = patterns.phone && text.match(patterns.phone) !== null;
-  const hasSSNs = patterns.ssn && text.match(patterns.ssn) !== null;
-  
-  // Check for custom regex matches
-  const customMatches = {};
-  for (const [name, regex] of Object.entries(patterns.custom || {})) {
-    customMatches[name] = text.match(regex) !== null;
-  }
-  
-  // Count total PII types detected
-  const piiCount = (hasEmails ? 1 : 0) + 
-                  (hasCardNumbers ? 1 : 0) + 
-                  (hasPhoneNumbers ? 1 : 0) + 
-                  (hasSSNs ? 1 : 0) + 
-                  Object.values(customMatches).filter(Boolean).length;
+  const detectedPatterns = Object.keys(patterns).filter(name => {
+    return text.match(patterns[name]) !== null;
+  });
   
   let headerText = 'Sensitive Information Detected';
-  if (piiCount === 1) {
-    if (hasEmails) headerText = 'Email Address Detected';
-    else if (hasCardNumbers) headerText = 'Credit Card Number Detected';
-    else if (hasPhoneNumbers) headerText = 'Phone Number Detected';
-    else if (hasSSNs) headerText = 'Social Security Number Detected';
-    else {
-      for (const [name, matched] of Object.entries(customMatches)) {
-        if (matched) {
-          headerText = `${name} Detected`;
-          break;
-        }
-      }
-    }
+  if (detectedPatterns.length === 1) {
+    headerText = `${detectedPatterns[0]} Detected`;
   } else {
     headerText = 'Multiple PII Types Detected';
   }
@@ -293,24 +241,6 @@ function showInteractivePopup(text, patterns = {}) {
     color: #333;
   `;
 
-  // Functions for masking sensitive data
-  function maskCardNumber(cardNumber) {
-    const lastFourDigits = cardNumber.replace(/\D/g, '').slice(-4);
-    return `****-****-****-${lastFourDigits}`;
-  }
-
-  function maskPhoneNumber(phoneNumber) {
-    const digits = phoneNumber.replace(/\D/g, '');
-    const lastFourDigits = digits.slice(-4);
-    return `(***) ***-${lastFourDigits}`;
-  }
-
-  function maskSSN(ssn) {
-    const digits = ssn.replace(/\D/g, '');
-    const lastFourDigits = digits.slice(-4);
-    return `***-**-${lastFourDigits}`;
-  }
-
   // Replace sensitive information with highlighted spans
   let highlightedText = text;
   
@@ -328,115 +258,41 @@ function showInteractivePopup(text, patterns = {}) {
     return false;
   }
   
-  // Collect all matches
-  if (hasCardNumbers) {
-    let match;
-    while ((match = patterns.creditCard.exec(text)) !== null) {
-      const masked = maskCardNumber(match[0]);
-      const newMatch = {
-        start: match.index,
-        end: match.index + match[0].length,
-        replacement: `<mark style="background-color: #FFF3F3; color: #E53935; padding: 2px 4px; border-radius: 2px; font-weight: normal;">${masked}</mark>`,
-        original: match[0],
-        priority: 10 // Higher priority for credit cards
-      };
-      
-      if (!doesOverlap(newMatch, allMatches)) {
-        allMatches.push(newMatch);
-      }
-    }
-    // Reset regex lastIndex
-    patterns.creditCard.lastIndex = 0;
-  }
-
-  if (hasPhoneNumbers) {
-    let match;
-    while ((match = patterns.phone.exec(text)) !== null) {
-      const masked = maskPhoneNumber(match[0]);
-      const newMatch = {
-        start: match.index,
-        end: match.index + match[0].length,
-        replacement: `<mark style="background-color: #E8F4FD; color: #1976D2; padding: 2px 4px; border-radius: 2px; font-weight: normal;">${masked}</mark>`,
-        original: match[0],
-        priority: 5
-      };
-      
-      if (!doesOverlap(newMatch, allMatches)) {
-        allMatches.push(newMatch);
-      }
-    }
-    // Reset regex lastIndex
-    patterns.phone.lastIndex = 0;
-  }
-
-  if (hasSSNs) {
-    let match;
-    while ((match = patterns.ssn.exec(text)) !== null) {
-      const masked = maskSSN(match[0]);
-      const newMatch = {
-        start: match.index,
-        end: match.index + match[0].length,
-        replacement: `<mark style="background-color: #F5F0FC; color: #7B1FA2; padding: 2px 4px; border-radius: 2px; font-weight: normal;">${masked}</mark>`,
-        original: match[0],
-        priority: 15 // Highest priority for SSNs
-      };
-      
-      if (!doesOverlap(newMatch, allMatches)) {
-        allMatches.push(newMatch);
-      }
-    }
-    // Reset regex lastIndex
-    patterns.ssn.lastIndex = 0;
-  }
-
-  if (hasEmails) {
-    let match;
-    while ((match = patterns.email.exec(text)) !== null) {
-      const newMatch = {
-        start: match.index,
-        end: match.index + match[0].length,
-        replacement: `<mark style="background-color: #FFFDE7; color: #F57F17; padding: 2px 4px; border-radius: 2px; font-weight: normal;">${match[0]}</mark>`,
-        original: match[0],
-        priority: 8
-      };
-      
-      if (!doesOverlap(newMatch, allMatches)) {
-        allMatches.push(newMatch);
-      }
-    }
-    // Reset regex lastIndex
-    patterns.email.lastIndex = 0;
-  }
-  
-  // Generate different subtle background colors for custom patterns
+  // Generate different subtle background colors for patterns
   const colorPalette = [
-    { bg: '#F1F8E9', color: '#558B2F' },
-    { bg: '#E0F2F1', color: '#00796B' },
-    { bg: '#FFF8E1', color: '#FF8F00' },
-    { bg: '#FBE9E7', color: '#D84315' }
+    { bg: '#FFF3F3', color: '#E53935' },  // Red (Credit Card)
+    { bg: '#E8F4FD', color: '#1976D2' },  // Blue (Phone)
+    { bg: '#F5F0FC', color: '#7B1FA2' },  // Purple (SSN)
+    { bg: '#FFFDE7', color: '#F57F17' },  // Amber (Email)
+    { bg: '#F1F8E9', color: '#558B2F' },  // Light Green
+    { bg: '#E0F2F1', color: '#00796B' },  // Teal
+    { bg: '#FFF8E1', color: '#FF8F00' },  // Orange
+    { bg: '#FBE9E7', color: '#D84315' }   // Deep Orange
   ];
   
-  let colorIndex = 0;
-  for (const [name, regex] of Object.entries(patterns.custom || {})) {
-    if (customMatches[name]) {
-      const { bg, color } = colorPalette[colorIndex % colorPalette.length];
-      colorIndex++;
+  // Collect all matches for each pattern
+  let patternIndex = 0;
+  for (const [name, regex] of Object.entries(patterns)) {
+    const { bg, color } = colorPalette[patternIndex % colorPalette.length];
+    patternIndex++;
+    
+    // Reset regex lastIndex
+    regex.lastIndex = 0;
+    
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      const newMatch = {
+        start: match.index,
+        end: match.index + match[0].length,
+        replacement: `<mark style="background-color: ${bg}; color: ${color}; padding: 2px 4px; border-radius: 2px;" title="${name}">${match[0]}</mark>`,
+        original: match[0],
+        priority: 10,
+        name: name
+      };
       
-      let match;
-      while ((match = regex.exec(text)) !== null) {
-        const newMatch = {
-          start: match.index,
-          end: match.index + match[0].length,
-          replacement: `<mark style="background-color: ${bg}; color: ${color}; padding: 2px 4px; border-radius: 2px;" title="${name}">${match[0]}</mark>`,
-          original: match[0]
-        };
-        
-        if (!doesOverlap(newMatch, allMatches)) {
-          allMatches.push(newMatch);
-        }
+      if (!doesOverlap(newMatch, allMatches)) {
+        allMatches.push(newMatch);
       }
-      // Reset regex lastIndex
-      regex.lastIndex = 0;
     }
   }
   
@@ -454,19 +310,9 @@ function showInteractivePopup(text, patterns = {}) {
   }
 
   // Create message text
-  const detectedTypes = [];
-  if (hasEmails) detectedTypes.push("email addresses");
-  if (hasCardNumbers) detectedTypes.push("credit card numbers");
-  if (hasPhoneNumbers) detectedTypes.push("phone numbers");
-  if (hasSSNs) detectedTypes.push("social security numbers");
-  
-  for (const [name, matched] of Object.entries(customMatches)) {
-    if (matched) detectedTypes.push(name);
-  }
-
   const message = document.createElement('p');
   message.style.cssText = 'margin: 0 0 16px 0; font-size: 14px; line-height: 1.5;';
-  message.textContent = `This paste contains ${detectedTypes.join(", ").replace(/,([^,]*)$/, " and$1")}:`;
+  message.textContent = `This paste contains ${detectedPatterns.join(", ").replace(/,([^,]*)$/, " and$1")}:`;
   content.appendChild(message);
 
   // Add highlighted text in a clean container

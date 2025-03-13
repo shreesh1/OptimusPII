@@ -267,6 +267,7 @@ function addCustomRegexRow(name = '', pattern = '', enabled = true) {
     width: 40px;
     height: 22px;
     margin-right: 12px;
+    flex-shrink: 0; /* Prevents the toggle from stretching */
   `;
   
   const toggleInput = document.createElement('input');

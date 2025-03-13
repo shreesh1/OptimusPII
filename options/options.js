@@ -59,12 +59,13 @@ function saveOptions(e) {
   customRegexElements.forEach(row => {
     const nameInput = row.querySelector('.regex-name');
     const patternInput = row.querySelector('.regex-pattern');
+    const enabled = row.querySelector('.toggle-regex').checked;
     
     // Only save non-empty patterns with names
     if (nameInput.value.trim() && patternInput.value.trim()) {
       customRegexPatterns[nameInput.value.trim()] = {
         pattern: patternInput.value.trim(),
-        enabled: true,
+        enabled: enabled,
         isDefault: false
       };
     }
@@ -123,7 +124,7 @@ function restoreOptions() {
       // Skip default patterns as they're already handled
       if (details.isDefault) continue;
       
-      addCustomRegexRow(name, details.pattern);
+      addCustomRegexRow(name, details.pattern, details.enabled);
       hasCustomPatterns = true;
     }
     
@@ -244,7 +245,7 @@ function addDefaultRegexRow(name, pattern, enabled) {
   container.appendChild(row);
 }
 
-function addCustomRegexRow(name = '', pattern = '') {
+function addCustomRegexRow(name = '', pattern = '', enabled = true) {
   const container = document.getElementById('custom-regex-container');
   const template = document.getElementById('regex-template');
   
@@ -256,6 +257,68 @@ function addCustomRegexRow(name = '', pattern = '') {
   // Set values if provided
   newRow.querySelector('.regex-name').value = name;
   newRow.querySelector('.regex-pattern').value = pattern;
+  
+  // Add toggle switch for custom patterns
+  const toggleSwitch = document.createElement('label');
+  toggleSwitch.className = 'switch';
+  toggleSwitch.style.cssText = `
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    margin-right: 12px;
+  `;
+  
+  const toggleInput = document.createElement('input');
+  toggleInput.className = 'toggle-regex';
+  toggleInput.type = 'checkbox';
+  toggleInput.checked = enabled;
+  toggleInput.style.cssText = `
+    opacity: 0;
+    width: 0;
+    height: 0;
+  `;
+  
+  const toggleSlider = document.createElement('span');
+  toggleSlider.className = 'slider';
+  toggleSlider.style.cssText = `
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: ${enabled ? '#0078d7' : '#ccc'};
+    transition: .4s;
+    border-radius: 22px;
+  `;
+  toggleSlider.innerHTML = `
+    <span style="
+      position: absolute;
+      content: '';
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+      transform: ${enabled ? 'translateX(18px)' : 'translateX(0)'};
+    "></span>
+  `;
+  
+  toggleInput.addEventListener('change', function() {
+    toggleSlider.querySelector('span').style.transform = 
+      this.checked ? 'translateX(18px)' : 'translateX(0)';
+    toggleSlider.style.backgroundColor = 
+      this.checked ? '#0078d7' : '#ccc';
+  });
+  
+  toggleSwitch.appendChild(toggleInput);
+  toggleSwitch.appendChild(toggleSlider);
+  
+  // Add toggle at the beginning of the row
+  newRow.insertBefore(toggleSwitch, newRow.firstChild);
   
   // Add remove button functionality
   newRow.querySelector('.remove-regex').addEventListener('click', function() {

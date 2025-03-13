@@ -9,7 +9,7 @@ let config = {
   browser.storage.local.get('mode').then((result) => {
     if (result.mode) {
       config.mode = result.mode;
-      console.log('Email blocker mode:', config.mode);
+      console.log('PII blocker mode:', config.mode);
     }
   });
   
@@ -17,7 +17,7 @@ let config = {
   browser.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes.mode) {
       config.mode = changes.mode.newValue;
-      console.log('Email blocker mode updated:', config.mode);
+      console.log('PII blocker mode updated:', config.mode);
     }
   });
   
@@ -35,13 +35,26 @@ let config = {
     const clipboardData = event.clipboardData || window.clipboardData;
     const pastedText = clipboardData.getData('text');
     
-    // Simple regex to detect email addresses
-    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+    // Regex to detect email addresses
+    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
     
-    // Check if the pasted content contains an email
-    if (emailRegex.test(pastedText)) {
+    // Regex to detect credit card numbers (supports major card formats with or without spaces/dashes)
+    const creditCardRegex = /(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|6(?:011|5[0-9]{2})[0-9]{12}|(?:2131|1800|35\d{3})\d{11}|(?:(?:5[0678]\d\d|6304|6390|67\d\d)\d{8,15}))([-\s]?[0-9]{4})?/g;
+    
+    // Find all emails and credit card numbers
+    const emails = pastedText.match(emailRegex) || [];
+    const creditCards = pastedText.match(creditCardRegex) || [];
+    
+    // Check if the pasted content contains sensitive data
+    if (emails.length > 0 || creditCards.length > 0) {
+      // Determine the type of PII for notification messages
+      const piiTypes = [];
+      if (emails.length > 0) piiTypes.push("email");
+      if (creditCards.length > 0) piiTypes.push("credit card");
+      const piiMessage = piiTypes.join(" and ");
+      
       // Log the detection (happens in all non-disabled modes)
-      console.log('Email detected in paste:', pastedText);
+      console.log(`${piiMessage} detected in paste:`, pastedText);
       
       // Handle based on mode
       switch(config.mode) {
@@ -56,18 +69,18 @@ let config = {
             text: pastedText
           };
           
-          // Show interactive popup with highlighted emails
-          showInteractivePopup(pastedText, emailRegex);
+          // Show interactive popup with highlighted sensitive data
+          showInteractivePopup(pastedText, emailRegex, creditCardRegex);
           return false;
           
         case "block-and-alert":
           event.preventDefault();
           event.stopPropagation();
-          showNotification('Paste blocked: Email address detected');
+          showNotification(`Paste blocked: ${piiMessage} detected`);
           return false;
           
         case "alert-only":
-          showNotification('Warning: Email address detected in paste');
+          showNotification(`Warning: ${piiMessage} detected in paste`);
           return true;
           
         case "silent-block":
@@ -106,9 +119,9 @@ let config = {
     }, 3000);
   }
   
-  function showInteractivePopup(text, emailRegex) {
+  function showInteractivePopup(text, emailRegex, creditCardRegex) {
     // Remove any existing popup
-    const existingPopup = document.getElementById('email-blocker-popup');
+    const existingPopup = document.getElementById('pii-blocker-popup');
     if (existingPopup) {
       existingPopup.remove();
     }
@@ -120,15 +133,15 @@ let config = {
     
     // Create popup container
     const popup = document.createElement('div');
-    popup.id = 'email-blocker-popup';
+    popup.id = 'pii-blocker-popup';
     popup.style.cssText = `
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background-color: white;
+      background-color: #f9f9f9;
       border-radius: 8px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
       z-index: 10001;
       width: 450px;
       max-width: 90vw;
@@ -139,10 +152,19 @@ let config = {
       font-family: Arial, sans-serif;
     `;
     
-    // Create popup header
+    // Determine what types of PII were detected
+    const hasEmails = text.match(emailRegex) !== null;
+    const hasCardNumbers = text.match(creditCardRegex) !== null;
+    
+    let headerText = 'Sensitive Information Detected';
+    if (hasEmails && !hasCardNumbers) headerText = 'Email Address Detected';
+    if (!hasEmails && hasCardNumbers) headerText = 'Credit Card Number Detected';
+    if (hasEmails && hasCardNumbers) headerText = 'Email and Credit Card Detected';
+    
+    // Create popup header with softer color
     const header = document.createElement('div');
     header.style.cssText = `
-      background-color: #ff4d4d;
+      background-color: #e74c3c;
       color: white;
       padding: 12px 15px;
       font-weight: bold;
@@ -150,7 +172,7 @@ let config = {
       justify-content: space-between;
       align-items: center;
     `;
-    header.textContent = 'Email Detected in Clipboard';
+    header.textContent = headerText;
     
     const closeButton = document.createElement('button');
     closeButton.textContent = '✕';
@@ -174,48 +196,73 @@ let config = {
       padding: 15px;
       overflow-y: auto;
       max-height: 300px;
+      color: #333;
     `;
     
-    // Highlight emails in content
+    // Highlight sensitive info in content
     const highlightedContent = document.createElement('pre');
     highlightedContent.style.cssText = `
       margin: 0;
       white-space: pre-wrap;
       word-break: break-word;
       font-family: monospace;
-      border: 1px solid #ddd;
+      border: 1px solid #e0e0e0;
       padding: 10px;
-      background-color: #f9f9f9;
+      background-color: #fff;
       border-radius: 4px;
       max-height: 200px;
       overflow-y: auto;
     `;
     
-    // Replace email addresses with highlighted spans
-    const highlightedText = text.replace(emailRegex, match => 
-      `<span style="background-color: #ffeb3b; font-weight: bold; padding: 2px 4px; border-radius: 2px;">${match}</span>`
-    );
+    // Function to mask all but last 4 digits of credit card
+    function maskCardNumber(cardNumber) {
+      const lastFourDigits = cardNumber.replace(/\D/g, '').slice(-4);
+      return `****-****-****-${lastFourDigits}`;
+    }
+    
+    // Replace emails and credit card numbers with highlighted spans
+    let highlightedText = text;
+    
+    // First replace credit cards (to avoid overlap issues)
+    if (hasCardNumbers) {
+      highlightedText = highlightedText.replace(creditCardRegex, match => {
+        const masked = maskCardNumber(match);
+        return `<span style="background-color: #fdebd0; font-weight: bold; padding: 2px 4px; border-radius: 2px;">${masked}</span>`;
+      });
+    }
+    
+    // Then replace emails
+    if (hasEmails) {
+      highlightedText = highlightedText.replace(emailRegex, match => 
+        `<span style="background-color: #fcf3cf; font-weight: bold; padding: 2px 4px; border-radius: 2px;">${match}</span>`
+      );
+    }
+    
     highlightedContent.innerHTML = highlightedText;
     
-    content.appendChild(document.createTextNode('The following paste contains email addresses:'));
+    const detectedTypes = [];
+    if (hasEmails) detectedTypes.push("email addresses");
+    if (hasCardNumbers) detectedTypes.push("credit card numbers");
+    
+    content.appendChild(document.createTextNode(`The following paste contains ${detectedTypes.join(" and ")}:`));
     content.appendChild(document.createElement('br'));
     content.appendChild(document.createElement('br'));
     content.appendChild(highlightedContent);
     
-    // Create action buttons
+    // Create action buttons with less bright colors
     const buttonContainer = document.createElement('div');
     buttonContainer.style.cssText = `
       padding: 15px;
       display: flex;
       justify-content: flex-end;
       gap: 10px;
-      border-top: 1px solid #eee;
+      border-top: 1px solid #e0e0e0;
     `;
     
     const blockButton = document.createElement('button');
     blockButton.textContent = 'Block Paste';
     blockButton.style.cssText = `
-      background-color: #ff4d4d;
+      background-color: #e74c3c;
       color: white;
       border: none;
       padding: 8px 15px;
@@ -226,13 +273,13 @@ let config = {
     blockButton.addEventListener('click', () => {
       popup.remove();
       pendingPasteEvent = null;
-      showNotification('Paste blocked: Email address detected');
+      showNotification('Paste blocked: Sensitive information detected');
     });
     
     const allowButton = document.createElement('button');
     allowButton.textContent = 'Allow Paste';
     allowButton.style.cssText = `
-      background-color: #4caf50;
+      background-color: #2ecc71;
       color: white;
       border: none;
       padding: 8px 15px;

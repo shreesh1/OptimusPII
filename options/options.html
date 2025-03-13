@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Email Paste Blocker Options</title>
+  <title>PII Paste Blocker Options</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -80,7 +80,7 @@
   </style>
 </head>
 <body>
-  <h1>Email Paste Blocker Settings</h1>
+  <h1>PII Paste Blocker Settings</h1>
   
   <div class="setting-group">
     <h2>Operation Mode</h2>
@@ -89,7 +89,7 @@
       <input type="radio" id="interactive" name="mode" value="interactive">
       <div class="option-content">
         <label class="option-title" for="interactive">Interactive (Recommended)</label>
-        <div class="option-description">Show a popup with highlighted emails and ask for confirmation</div>
+        <div class="option-description">Show a popup with highlighted sensitive information (emails, credit cards) and ask for confirmation</div>
       </div>
     </div>
     
@@ -97,7 +97,7 @@
       <input type="radio" id="block-and-alert" name="mode" value="block-and-alert">
       <div class="option-content">
         <label class="option-title" for="block-and-alert">Block paste and show alert</label>
-        <div class="option-description">Automatically blocks paste operations with emails and shows a notification</div>
+        <div class="option-description">Automatically blocks paste operations with sensitive information and shows a notification</div>
       </div>
     </div>
     
@@ -105,7 +105,7 @@
       <input type="radio" id="alert-only" name="mode" value="alert-only">
       <div class="option-content">
         <label class="option-title" for="alert-only">Show alert only</label>
-        <div class="option-description">Allows paste but shows a warning notification when an email is detected</div>
+        <div class="option-description">Allows paste but shows a warning notification when sensitive information is detected</div>
       </div>
     </div>
     
@@ -113,7 +113,7 @@
       <input type="radio" id="silent-block" name="mode" value="silent-block">
       <div class="option-content">
         <label class="option-title" for="silent-block">Block paste silently</label>
-        <div class="option-description">Blocks paste operations with emails but doesn't show any notification</div>
+        <div class="option-description">Blocks paste operations with sensitive information but doesn't show any notification</div>
       </div>
     </div>
     
@@ -121,7 +121,7 @@
       <input type="radio" id="disabled" name="mode" value="disabled">
       <div class="option-content">
         <label class="option-title" for="disabled">Disable extension</label>
-        <div class="option-description">Completely turns off all email detection functionality</div>
+        <div class="option-description">Completely turns off all sensitive information detection functionality</div>
       </div>
     </div>
   </div>

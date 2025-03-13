@@ -14,6 +14,21 @@ Extension to block pasting PII (Personally Identifiable Information) in ChatGPT,
   - Silent Block: Blocks paste without notifications
   - Disabled: Turns off all detection
 
+## Screenshots
+
+1. Interactive Module for Blocking or Allowing
+![image](https://github.com/user-attachments/assets/d10f8632-8487-4bbc-9091-998edb5c74db)
+
+2. Notifications for other modes if paste is directly blocked or detected in alert mode
+Block Mode
+![image](https://github.com/user-attachments/assets/e6937119-f2b9-4c91-9db8-a9aaad2112be)
+
+Alert Mode
+![image](https://github.com/user-attachments/assets/228d4ac7-3526-4782-a4f2-b9169d670e20)
+
+3. Configuration changes from the options mode for blocking or interactive mode
+![image](https://github.com/user-attachments/assets/c3bab661-6d06-4b20-b2d1-69769e5677f6)
+
 ## How it works
 
 The extension monitors paste events on web pages and checks for patterns that match known PII formats. When detected, it can block the paste operation and/or notify the user based on the selected operational mode.

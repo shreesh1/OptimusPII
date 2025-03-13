@@ -123,7 +123,13 @@ function handlePaste(event) {
         };
 
         // Show interactive popup with highlighted sensitive data
-        showInteractivePopup(pastedText, emailRegex, creditCardRegex, phoneRegex, ssnRegex, customRegexes);
+        showInteractivePopup(pastedText, {
+          email: emailRegex,
+          creditCard: creditCardRegex,
+          phone: phoneRegex,
+          ssn: ssnRegex,
+          custom: customRegexes
+        });
         return false;
 
       case "block-and-alert":
@@ -172,7 +178,7 @@ function showNotification(message) {
   }, 3000);
 }
 
-function showInteractivePopup(text, emailRegex, creditCardRegex, phoneRegex, ssnRegex, customRegexes = {}) {
+function showInteractivePopup(text, patterns = {}) {
   // Remove any existing popup
   const existingPopup = document.getElementById('pii-blocker-popup');
   if (existingPopup) {
@@ -207,14 +213,14 @@ function showInteractivePopup(text, emailRegex, creditCardRegex, phoneRegex, ssn
   `;
 
   // Determine what types of PII were detected
-  const hasEmails = text.match(emailRegex) !== null;
-  const hasCardNumbers = text.match(creditCardRegex) !== null;
-  const hasPhoneNumbers = text.match(phoneRegex) !== null;
-  const hasSSNs = text.match(ssnRegex) !== null;
+  const hasEmails = patterns.email && text.match(patterns.email) !== null;
+  const hasCardNumbers = patterns.creditCard && text.match(patterns.creditCard) !== null;
+  const hasPhoneNumbers = patterns.phone && text.match(patterns.phone) !== null;
+  const hasSSNs = patterns.ssn && text.match(patterns.ssn) !== null;
   
   // Check for custom regex matches
   const customMatches = {};
-  for (const [name, regex] of Object.entries(customRegexes)) {
+  for (const [name, regex] of Object.entries(patterns.custom || {})) {
     customMatches[name] = text.match(regex) !== null;
   }
   
@@ -325,7 +331,7 @@ function showInteractivePopup(text, emailRegex, creditCardRegex, phoneRegex, ssn
   // Collect all matches
   if (hasCardNumbers) {
     let match;
-    while ((match = creditCardRegex.exec(text)) !== null) {
+    while ((match = patterns.creditCard.exec(text)) !== null) {
       const masked = maskCardNumber(match[0]);
       const newMatch = {
         start: match.index,
@@ -340,12 +346,12 @@ function showInteractivePopup(text, emailRegex, creditCardRegex, phoneRegex, ssn
       }
     }
     // Reset regex lastIndex
-    creditCardRegex.lastIndex = 0;
+    patterns.creditCard.lastIndex = 0;
   }
 
   if (hasPhoneNumbers) {
     let match;
-    while ((match = phoneRegex.exec(text)) !== null) {
+    while ((match = patterns.phone.exec(text)) !== null) {
       const masked = maskPhoneNumber(match[0]);
       const newMatch = {
         start: match.index,
@@ -360,12 +366,12 @@ function showInteractivePopup(text, emailRegex, creditCardRegex, phoneRegex, ssn
       }
     }
     // Reset regex lastIndex
-    phoneRegex.lastIndex = 0;
+    patterns.phone.lastIndex = 0;
   }
 
   if (hasSSNs) {
     let match;
-    while ((match = ssnRegex.exec(text)) !== null) {
+    while ((match = patterns.ssn.exec(text)) !== null) {
       const masked = maskSSN(match[0]);
       const newMatch = {
         start: match.index,
@@ -380,12 +386,12 @@ function showInteractivePopup(text, emailRegex, creditCardRegex, phoneRegex, ssn
       }
     }
     // Reset regex lastIndex
-    ssnRegex.lastIndex = 0;
+    patterns.ssn.lastIndex = 0;
   }
 
   if (hasEmails) {
     let match;
-    while ((match = emailRegex.exec(text)) !== null) {
+    while ((match = patterns.email.exec(text)) !== null) {
       const newMatch = {
         start: match.index,
         end: match.index + match[0].length,
@@ -399,7 +405,7 @@ function showInteractivePopup(text, emailRegex, creditCardRegex, phoneRegex, ssn
       }
     }
     // Reset regex lastIndex
-    emailRegex.lastIndex = 0;
+    patterns.email.lastIndex = 0;
   }
   
   // Generate different subtle background colors for custom patterns
@@ -411,7 +417,7 @@ function showInteractivePopup(text, emailRegex, creditCardRegex, phoneRegex, ssn
   ];
   
   let colorIndex = 0;
-  for (const [name, regex] of Object.entries(customRegexes)) {
+  for (const [name, regex] of Object.entries(patterns.custom || {})) {
     if (customMatches[name]) {
       const { bg, color } = colorPalette[colorIndex % colorPalette.length];
       colorIndex++;

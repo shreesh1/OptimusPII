@@ -175,6 +175,11 @@
     #add-regex:hover {
       background-color: #e0e0e0;
     }
+    
+    /* Alternative fix in your CSS */
+    .hidden, [hidden] {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -228,13 +233,11 @@
     <h2>Custom Detection Patterns</h2>
     
     <div id="custom-regex-container">
-      <!-- Template row (hidden) -->
       <div id="regex-template" class="custom-regex-row hidden">
         <input type="text" class="regex-name" placeholder="Name (e.g. 'Credit Card')" />
         <input type="text" class="regex-pattern" placeholder="Regex pattern" />
         <button type="button" class="remove-regex">Remove</button>
       </div>
-      <!-- Custom regex rows will be added here -->
     </div>
     
     <button type="button" id="add-regex">Add Pattern</button>

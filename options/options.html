@@ -4,36 +4,75 @@
   <title>PII Paste Blocker Options</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      max-width: 600px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      padding: 40px;
+      max-width: 700px;
       margin: 0 auto;
       color: #333;
+      line-height: 1.5;
+      background-color: #fafafa;
     }
     
     h1 {
+      font-weight: 400;
+      color: #222;
+      margin-bottom: 30px;
+      font-size: 28px;
+      letter-spacing: -0.5px;
+    }
+    
+    h2 {
+      font-weight: 500;
+      font-size: 18px;
+      margin-top: 0;
+      margin-bottom: 20px;
       color: #333;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 10px;
+    }
+    
+    .setting-group {
+      background-color: #fff;
+      padding: 30px;
+      margin-bottom: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
     
     .option {
-      margin-bottom: 15px;
+      margin-bottom: 16px;
       display: flex;
       align-items: flex-start;
     }
     
-    .option input {
-      margin-top: 4px;
+    .option:last-child {
+      margin-bottom: 0;
+    }
+    
+    .option input[type="radio"] {
+      margin-top: 5px;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ddd;
+      border-radius: 50%;
+      outline: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .option input[type="radio"]:checked {
+      border-color: #0078d7;
+      box-shadow: inset 0 0 0 4px #0078d7;
     }
     
     .option-content {
-      margin-left: 10px;
+      margin-left: 12px;
     }
     
     .option-title {
-      font-weight: bold;
-      margin-bottom: 3px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      display: block;
+      color: #222;
     }
     
     .option-description {
@@ -42,45 +81,104 @@
     }
     
     button {
-      margin-top: 20px;
-      padding: 8px 15px;
-      background-color: #0060df;
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #0078d7;
       color: white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 500;
+      font-size: 14px;
+      transition: background-color 0.2s;
     }
     
     button:hover {
-      background-color: #003eaa;
+      background-color: #0069c0;
     }
     
     .status {
-      margin-top: 10px;
+      margin-top: 16px;
       padding: 5px;
-      color: green;
+      color: #2e7d32;
       opacity: 0;
       transition: opacity 0.5s;
+      font-size: 14px;
     }
     
-    .setting-group {
-      background-color: #f9f9f9;
-      padding: 15px;
-      margin-bottom: 20px;
+    .section {
+      margin-bottom: 30px;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .custom-regex-row {
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .regex-name, .regex-pattern {
+      padding: 10px;
+      border: 1px solid #ddd;
       border-radius: 4px;
-      border: 1px solid #eee;
+      font-size: 14px;
+      transition: border-color 0.2s;
     }
     
-    .setting-group h2 {
-      margin-top: 0;
-      font-size: 18px;
-      color: #555;
+    .regex-name:focus, .regex-pattern:focus {
+      border-color: #0078d7;
+      outline: none;
+    }
+    
+    .regex-name {
+      width: 30%;
+    }
+    
+    .regex-pattern {
+      flex-grow: 1;
+    }
+    
+    .remove-regex {
+      padding: 6px 12px;
+      background-color: #f5f5f5;
+      color: #666;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .remove-regex:hover {
+      background-color: #f44336;
+      color: white;
+    }
+    
+    #add-regex {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #f5f5f5;
+      color: #333;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    #add-regex:hover {
+      background-color: #e0e0e0;
     }
   </style>
 </head>
 <body>
-  <h1>PII Paste Blocker Settings</h1>
+  <h1>PII Paste Blocker</h1>
   
   <div class="setting-group">
     <h2>Operation Mode</h2>
@@ -88,47 +186,63 @@
     <div class="option">
       <input type="radio" id="interactive" name="mode" value="interactive">
       <div class="option-content">
-        <label class="option-title" for="interactive">Interactive (Recommended)</label>
-        <div class="option-description">Show a popup with highlighted sensitive information (emails, credit cards) and ask for confirmation</div>
+        <label class="option-title" for="interactive">Interactive</label>
+        <div class="option-description">Show a popup with highlighted sensitive information and ask for confirmation</div>
       </div>
     </div>
     
     <div class="option">
       <input type="radio" id="block-and-alert" name="mode" value="block-and-alert">
       <div class="option-content">
-        <label class="option-title" for="block-and-alert">Block paste and show alert</label>
-        <div class="option-description">Automatically blocks paste operations with sensitive information and shows a notification</div>
+        <label class="option-title" for="block-and-alert">Block paste and notify</label>
+        <div class="option-description">Block paste operations with sensitive information and show a notification</div>
       </div>
     </div>
     
     <div class="option">
       <input type="radio" id="alert-only" name="mode" value="alert-only">
       <div class="option-content">
-        <label class="option-title" for="alert-only">Show alert only</label>
-        <div class="option-description">Allows paste but shows a warning notification when sensitive information is detected</div>
+        <label class="option-title" for="alert-only">Notify only</label>
+        <div class="option-description">Allow paste but show a warning when sensitive information is detected</div>
       </div>
     </div>
     
     <div class="option">
       <input type="radio" id="silent-block" name="mode" value="silent-block">
       <div class="option-content">
-        <label class="option-title" for="silent-block">Block paste silently</label>
-        <div class="option-description">Blocks paste operations with sensitive information but doesn't show any notification</div>
+        <label class="option-title" for="silent-block">Silent block</label>
+        <div class="option-description">Block sensitive pastes without any notification</div>
       </div>
     </div>
     
     <div class="option">
       <input type="radio" id="disabled" name="mode" value="disabled">
       <div class="option-content">
-        <label class="option-title" for="disabled">Disable extension</label>
-        <div class="option-description">Completely turns off all sensitive information detection functionality</div>
+        <label class="option-title" for="disabled">Disabled</label>
+        <div class="option-description">Turn off all detection functionality</div>
       </div>
     </div>
   </div>
   
+  <div class="section">
+    <h2>Custom Detection Patterns</h2>
+    
+    <div id="custom-regex-container">
+      <!-- Template row (hidden) -->
+      <div id="regex-template" class="custom-regex-row hidden">
+        <input type="text" class="regex-name" placeholder="Name (e.g. 'Credit Card')" />
+        <input type="text" class="regex-pattern" placeholder="Regex pattern" />
+        <button type="button" class="remove-regex">Remove</button>
+      </div>
+      <!-- Custom regex rows will be added here -->
+    </div>
+    
+    <button type="button" id="add-regex">Add Pattern</button>
+  </div>
+  
   <button id="save">Save Settings</button>
   
-  <div id="status" class="status">Settings saved successfully!</div>
+  <div id="status" class="status">Settings saved</div>
   
   <script src="options.js"></script>
 </body>

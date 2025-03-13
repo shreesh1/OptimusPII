@@ -7,6 +7,7 @@ Extension to block pasting PII (Personally Identifiable Information) in ChatGPT,
 - Detects and blocks credit card numbers in pasted content
 - Detects and blocks phone numbers in various international formats
 - Detects and blocks Social Security Numbers (SSNs) in pasted content
+- Support for custom regex patterns to detect additional types of sensitive information
 - Multiple operational modes:
   - Interactive: Shows a popup with highlighted sensitive information and asks for confirmation
   - Block and Alert: Automatically blocks and shows a notification
@@ -39,6 +40,7 @@ The extension monitors paste events on web pages and checks for patterns that ma
 - **Credit Card Numbers**: Major card formats (Visa, Mastercard, Amex, etc.) with or without spaces/dashes
 - **Phone Numbers**: Various international formats with different separators and country codes
 - **Social Security Numbers**: US SSN formats (XXX-XX-XXXX, XXX XX XXXX, or XXXXXXXXX) with validation rules
+- **Custom Patterns**: User-defined regex patterns for detecting specific types of sensitive information
 
 ## Installation
 
@@ -51,4 +53,17 @@ Load the extension in your browser:
 
 - ChatGPT (https://chatgpt.com/*)
 - Claude AI (https://claude.ai/*)
+
+## Configuration Options
+
+Access the extension options to customize how OptimusPII works:
+
+1. **Operation Mode**: Select how the extension should respond to detected PII
+   - Interactive mode provides a detailed popup showing detected information
+   - Other modes provide varying levels of blocking and notifications
+
+2. **Custom Detection Patterns**: Add your own regex patterns to detect specific types of sensitive information
+   - Name your pattern (e.g., "API Key", "Database Password")
+   - Provide a regex pattern to match the sensitive information
+   - Patterns can be added, edited, or removed through the options page
 

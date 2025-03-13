@@ -17,14 +17,6 @@ browser.storage.local.get(['mode', 'regexPatterns']).then((result) => {
   if (result.regexPatterns) {
     config.regexPatterns = result.regexPatterns;
     console.log('Regex patterns loaded:', Object.keys(config.regexPatterns));
-  } else {
-    // Load default patterns if no stored patterns exist
-    // This should only happen on first run
-    browser.runtime.sendMessage({ action: "getDefaultPatterns" })
-      .then(response => {
-        config.regexPatterns = response.defaultPatterns;
-        console.log('Default regex patterns loaded:', Object.keys(config.regexPatterns));
-      });
   }
 });
 

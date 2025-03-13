@@ -1,34 +1,5 @@
 // options.js
 
-// Default regex patterns
-const DEFAULT_REGEX_PATTERNS = {
-  "Email Address": {
-    pattern: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g.source,
-    enabled: true,
-    isDefault: true
-  },
-  "Credit Card Number": {
-    pattern: /(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|6(?:011|5[0-9]{2})[0-9]{12}|(?:2131|1800|35\d{3})\d{11}|(?:(?:5[0678]\d\d|6304|6390|67\d\d)\d{8,15}))([-\s]?[0-9]{4})?/g.source,
-    enabled: true,
-    isDefault: true
-  },
-  "Phone Number": {
-    pattern: /(?:\+\d{1,3}[\s-]?)?\(?(?:\d{1,4})\)?[\s.-]?\d{1,4}[\s.-]?\d{1,9}/g.source,
-    enabled: true,
-    isDefault: true
-  },
-  "Social Security Number": {
-    pattern: /\b(?!000|666|9\d{2})([0-8]\d{2}|7([0-6]\d|7[012]))([-\s]?)(?!00)\d\d\3(?!0000)\d{4}\b/g.source,
-    enabled: true,
-    isDefault: true
-  },
-  "Passport Number": {
-    pattern: /\b[A-Z]{1,2}[0-9]{6,9}\b/g.source,
-    enabled: true,
-    isDefault: true
-  }
-};
-
 function saveOptions(e) {
   e.preventDefault();
   
@@ -44,9 +15,9 @@ function saveOptions(e) {
     const name = nameElement.textContent;
     const enabled = row.querySelector('.toggle-regex').checked;
     
-    if (DEFAULT_REGEX_PATTERNS[name]) {
+    if (window.OptimusPII.DEFAULT_REGEX_PATTERNS[name]) {
       defaultRegexPatterns[name] = {
-        pattern: DEFAULT_REGEX_PATTERNS[name].pattern,
+        pattern: window.OptimusPII.DEFAULT_REGEX_PATTERNS[name].pattern,
         enabled: enabled,
         isDefault: true
       };
@@ -88,48 +59,44 @@ function saveOptions(e) {
   });
 }
 
-function restoreOptions() {
-  browser.storage.local.get(['mode', 'regexPatterns']).then((result) => {
+// Fetch default patterns from storage when options page loads
+function initializeOptionsPage() {
+  browser.storage.local.get(['regexPatterns']).then((result) => {
+    const storedPatterns = result.regexPatterns || {};
+    
+    // Now restore options with the retrieved patterns
+    restoreOptions(storedPatterns);
+  });
+
+  document.getElementById('add-regex').addEventListener('click', () => {
+    addCustomRegexRow();
+  });
+
+}
+
+function restoreOptions(storedPatterns) {
+  browser.storage.local.get(['mode']).then((result) => {
     // Default to "interactive" if not set
     const mode = result.mode || 'interactive';
     document.querySelector(`input[value="${mode}"]`).checked = true;
     
-    // Get stored regex patterns or use defaults
-    const storedRegexPatterns = result.regexPatterns || {};
-    
-    // Process default patterns
+    // Process patterns
     const defaultRegexContainer = document.getElementById('default-regex-container');
     defaultRegexContainer.innerHTML = ''; // Clear existing content
     
-    // Add default patterns
-    for (const [name, details] of Object.entries(DEFAULT_REGEX_PATTERNS)) {
-      // Check if this default pattern exists in stored patterns
-      const storedPattern = storedRegexPatterns[name];
-      const isEnabled = storedPattern ? storedPattern.enabled : details.enabled;
-      
-      addDefaultRegexRow(name, details.pattern, isEnabled);
-    }
-    
-    // Restore custom regex patterns
-    const customRegexContainer = document.getElementById('custom-regex-container');
-    
-    // Clear existing rows (except template)
-    const existingRows = customRegexContainer.querySelectorAll('.custom-regex-row:not(#regex-template)');
-    existingRows.forEach(row => row.remove());
-    
-    // Add a row for each custom pattern (non-default)
-    let hasCustomPatterns = false;
-    
-    for (const [name, details] of Object.entries(storedRegexPatterns)) {
-      // Skip default patterns as they're already handled
-      if (details.isDefault) continue;
-      
-      addCustomRegexRow(name, details.pattern, details.enabled);
-      hasCustomPatterns = true;
+    // Add all patterns from storage
+    for (const [name, details] of Object.entries(storedPatterns)) {
+      if (details.isDefault) {
+        // Add default patterns
+        addDefaultRegexRow(name, details.pattern, details.enabled);
+      } else {
+        // Add custom patterns
+        addCustomRegexRow(name, details.pattern, details.enabled);
+      }
     }
     
     // Add an empty row if no custom patterns exist
-    if (!hasCustomPatterns) {
+    if (!document.querySelector('.custom-regex-row:not(#regex-template)')) {
       addCustomRegexRow();
     }
   });
@@ -330,13 +297,6 @@ function addCustomRegexRow(name = '', pattern = '', enabled = true) {
   container.appendChild(newRow);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  restoreOptions();
-  
-  // Add button for new regex
-  document.getElementById('add-regex').addEventListener('click', () => {
-    addCustomRegexRow();
-  });
-});
+document.addEventListener('DOMContentLoaded', initializeOptionsPage);
 
 document.getElementById('save').addEventListener('click', saveOptions);

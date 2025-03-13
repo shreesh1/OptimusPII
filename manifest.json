@@ -1,32 +1,39 @@
 {
-    "manifest_version": 3,
-    "name": "OptimusPII",
-    "version": "1.0",
-    "description": "Saves from pasting data",
-    "permissions": [
-      "webRequest",
-      "webRequestBlocking",
-      "scripting",
-      "storage",
-      "activeTab",
-      "webRequestFilterResponse",
-      "contextMenus",
-      "scripting",
-      "clipboardRead"
-    ],
-    "host_permissions": [
-      "*://*/*"
-    ],
-    "content_scripts": [
-      {
-        "matches": ["https://chatgpt.com/*",
-        "https://claude.ai/*"],
-        "js": ["content.js"],
-        "run_at": "document_start",
-        "all_frames": true
-      }
-    ],
-    "options_ui": {
+  "manifest_version": 3,
+  "name": "OptimusPII",
+  "version": "1.0",
+  "description": "Saves from pasting data",
+  "permissions": [
+    "webRequest",
+    "webRequestBlocking",
+    "scripting",
+    "storage",
+    "activeTab",
+    "webRequestFilterResponse",
+    "contextMenus",
+    "scripting",
+    "clipboardRead"
+  ],
+  "host_permissions": [
+    "*://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://claude.ai/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "options_ui": {
     "page": "options/options.html"
+  },
+  "background": {
+    "scripts":["background.js"]
   }
-  }
+}

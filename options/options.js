@@ -192,23 +192,26 @@ function addDefaultRegexRow(name, pattern, enabled, sampleData = '') {
     transition: .4s;
     border-radius: 22px;
   `;
-  toggleSlider.innerHTML = `
-    <span style="
-      position: absolute;
-      content: '';
-      height: 16px;
-      width: 16px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
-      transform: ${enabled ? 'translateX(18px)' : 'translateX(0)'};
-    "></span>
+
+  // Create the inner span instead of using innerHTML
+  const sliderHandle = document.createElement('span');
+  sliderHandle.style.cssText = `
+    position: absolute;
+    content: '';
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    transform: ${enabled ? 'translateX(18px)' : 'translateX(0)'};
   `;
 
+  toggleSlider.appendChild(sliderHandle);
+
   toggleInput.addEventListener('change', function () {
-    toggleSlider.querySelector('span').style.transform =
+    sliderHandle.style.transform =
       this.checked ? 'translateX(18px)' : 'translateX(0)';
     toggleSlider.style.backgroundColor =
       this.checked ? '#0078d7' : '#ccc';
@@ -329,23 +332,26 @@ function addCustomRegexRow(name = '', pattern = '', enabled = true, sampleData =
     transition: .4s;
     border-radius: 22px;
   `;
-  toggleSlider.innerHTML = `
-    <span style="
-      position: absolute;
-      content: '';
-      height: 16px;
-      width: 16px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
-      transform: ${enabled ? 'translateX(18px)' : 'translateX(0)'};
-    "></span>
+
+  // Create the inner span instead of using innerHTML
+  const sliderHandle = document.createElement('span');
+  sliderHandle.style.cssText = `
+    position: absolute;
+    content: '';
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    transform: ${enabled ? 'translateX(18px)' : 'translateX(0)'};
   `;
 
+  toggleSlider.appendChild(sliderHandle);
+
   toggleInput.addEventListener('change', function () {
-    toggleSlider.querySelector('span').style.transform =
+    sliderHandle.style.transform =
       this.checked ? 'translateX(18px)' : 'translateX(0)';
     toggleSlider.style.backgroundColor =
       this.checked ? '#0078d7' : '#ccc';
@@ -471,12 +477,7 @@ function addChangeListeners() {
 
 // Modify your existing save function
 document.getElementById('save').addEventListener('click', function () {
-  // Your existing save code...
-
-  // After successful save:
   resetChangeState();
-
-  // Your existing status message code...
 });
 
 // Initialize listeners once DOM is fully loaded

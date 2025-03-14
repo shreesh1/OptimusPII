@@ -14,7 +14,6 @@
     "storage",
     "activeTab",
     "contextMenus",
-    "scripting",
     "clipboardRead"
   ],
   "host_permissions": [
@@ -38,7 +37,9 @@
     "open_in_tab": true
   },
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [
+      "background.js"
+    ]
   },
   "action": {
     "default_icon": {
@@ -48,5 +49,10 @@
     },
     "default_title": "OptimusPII",
     "default_popup": "options/options.html"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{ae50d192-ea57-4d28-a49a-46b39241df21}"
+    }
   }
 }

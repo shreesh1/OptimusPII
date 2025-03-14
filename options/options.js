@@ -14,12 +14,15 @@ function saveOptions(e) {
     const nameElement = row.querySelector('.regex-name');
     const name = nameElement.textContent;
     const enabled = row.querySelector('.toggle-regex').checked;
+    const sampleInput = row.querySelector('.regex-sample');
+    const sampleData = sampleInput ? sampleInput.value : window.OptimusPII.DEFAULT_REGEX_PATTERNS[name].sampleData;
     
     if (window.OptimusPII.DEFAULT_REGEX_PATTERNS[name]) {
       defaultRegexPatterns[name] = {
         pattern: window.OptimusPII.DEFAULT_REGEX_PATTERNS[name].pattern,
         enabled: enabled,
-        isDefault: true
+        isDefault: true,
+        sampleData: sampleData
       };
     }
   });
@@ -30,6 +33,7 @@ function saveOptions(e) {
   customRegexElements.forEach(row => {
     const nameInput = row.querySelector('.regex-name');
     const patternInput = row.querySelector('.regex-pattern');
+    const sampleInput = row.querySelector('.regex-sample');
     const enabled = row.querySelector('.toggle-regex').checked;
     
     // Only save non-empty patterns with names
@@ -37,7 +41,8 @@ function saveOptions(e) {
       customRegexPatterns[nameInput.value.trim()] = {
         pattern: patternInput.value.trim(),
         enabled: enabled,
-        isDefault: false
+        isDefault: false,
+        sampleData: sampleInput.value.trim() || "REDACTED"
       };
     }
   });
@@ -104,10 +109,10 @@ function restoreOptions(storedPatterns, storedUrls) {
     for (const [name, details] of Object.entries(storedPatterns)) {
       if (details.isDefault) {
         // Add default patterns
-        addDefaultRegexRow(name, details.pattern, details.enabled);
+        addDefaultRegexRow(name, details.pattern, details.enabled, details.sampleData);
       } else {
         // Add custom patterns
-        addCustomRegexRow(name, details.pattern, details.enabled);
+        addCustomRegexRow(name, details.pattern, details.enabled, details.sampleData);
       }
     }
     
@@ -134,7 +139,7 @@ function restoreOptions(storedPatterns, storedUrls) {
   });
 }
 
-function addDefaultRegexRow(name, pattern, enabled) {
+function addDefaultRegexRow(name, pattern, enabled, sampleData = '') {
   const container = document.getElementById('default-regex-container');
   
   // Create row
@@ -235,16 +240,41 @@ function addDefaultRegexRow(name, pattern, enabled) {
     alert(`Pattern for ${name}:\n\n${pattern}`);
   });
   
+  // Create sample data input
+  const sampleLabel = document.createElement('div');
+  sampleLabel.textContent = 'Sample replacement:';
+  sampleLabel.style.cssText = `
+    font-size: 13px;
+    color: #666;
+    margin-right: 5px;
+  `;
+  
+  const sampleInput = document.createElement('input');
+  sampleInput.type = 'text';
+  sampleInput.className = 'regex-sample';
+  sampleInput.value = sampleData || '';
+  sampleInput.placeholder = 'Sample replacement data';
+  sampleInput.style.cssText = `
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    width: 180px;
+    margin-right: 10px;
+  `;
+  
   // Add elements to row
   row.appendChild(toggleSwitch);
   row.appendChild(nameElement);
   row.appendChild(infoButton);
+  row.appendChild(sampleLabel);
+  row.appendChild(sampleInput);
   
   // Add row to container
   container.appendChild(row);
 }
 
-function addCustomRegexRow(name = '', pattern = '', enabled = true) {
+function addCustomRegexRow(name = '', pattern = '', enabled = true, sampleData = '') {
   const container = document.getElementById('custom-regex-container');
   const template = document.getElementById('regex-template');
   
@@ -256,6 +286,7 @@ function addCustomRegexRow(name = '', pattern = '', enabled = true) {
   // Set values if provided
   newRow.querySelector('.regex-name').value = name;
   newRow.querySelector('.regex-pattern').value = pattern;
+  newRow.querySelector('.regex-sample').value = sampleData;
   
   // Add toggle switch for custom patterns
   const toggleSwitch = document.createElement('label');

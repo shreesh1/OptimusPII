@@ -24,7 +24,7 @@ Extension to block pasting PII (Personally Identifiable Information) in ChatGPT,
 
 1. Interactive Module for Blocking or Allowing
 
-![image](https://github.com/user-attachments/assets/8032b8a1-97bd-4ec4-ba93-ecf35391bb10)
+![image](https://github.com/user-attachments/assets/f6410aa8-dcd5-4856-970c-d3005378abf4)
 
 2. Notifications for other modes if paste is directly blocked or detected in alert mode
 

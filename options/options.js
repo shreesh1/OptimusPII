@@ -30,7 +30,8 @@ function saveOptions(e) {
   // Get custom regex patterns
   const customRegexPatterns = {};
   const customRegexElements = document.querySelectorAll('.custom-regex-row:not(#regex-template)');
-  customRegexElements.forEach(row => {
+  customRegexElements.forEach((row, index) => {
+     if (index === 0) return; 
     const nameInput = row.querySelector('.regex-name');
     const patternInput = row.querySelector('.regex-pattern');
     const sampleInput = row.querySelector('.regex-sample');
@@ -152,7 +153,7 @@ function addDefaultRegexRow(name, pattern, enabled, sampleData = '') {
     padding: 10px;
     background-color: #f9f9f9;
     border-radius: 4px;
-  `;
+      `;
   
   // Create toggle switch
   const toggleSwitch = document.createElement('label');
@@ -163,6 +164,7 @@ function addDefaultRegexRow(name, pattern, enabled, sampleData = '') {
     width: 40px;
     height: 22px;
     margin-right: 12px;
+    flex-shrink: 0; /* Prevents the toggle from stretching */
   `;
   
   const toggleInput = document.createElement('input');
@@ -220,6 +222,7 @@ function addDefaultRegexRow(name, pattern, enabled, sampleData = '') {
   nameElement.style.cssText = `
     font-weight: 500;
     flex-grow: 1;
+    min-width: 150px; /* Ensure minimum width */
   `;
   
   // Info button to view pattern
@@ -234,6 +237,7 @@ function addDefaultRegexRow(name, pattern, enabled, sampleData = '') {
     cursor: pointer;
     font-size: 13px;
     color: #333;
+    margin-right: 10px;
   `;
   
   infoButton.addEventListener('click', () => {

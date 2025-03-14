@@ -199,37 +199,37 @@
     
     .custom-regex-row {
       display: flex;
-      align-items: center;
+      flex-direction: column;
       margin-bottom: 16px;
       padding: 10px;
       background-color: #f9f9f9;
       border-radius: 4px;
+      gap: 12px;
     }
 
-    .custom-regex-row .toggle-regex {
-      margin-right: 12px;
+    .custom-regex-row .row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
     .custom-regex-row .regex-name,
     .custom-regex-row .regex-pattern,
     .custom-regex-row .regex-sample {
-      padding: 6px 10px;
+      padding: 10px;
       border: 1px solid #ddd;
       border-radius: 4px;
       font-size: 14px;
-      margin-right: 10px;
-    }
-
-    .custom-regex-row .regex-name {
       flex: 1;
     }
 
-    .custom-regex-row .regex-pattern {
+    .custom-regex-row .regex-name,
+    .custom-regex-row .regex-sample {
       flex: 2;
     }
 
-    .custom-regex-row .regex-sample {
-      flex: 1;
+    .custom-regex-row .regex-pattern {
+      flex: 3;
     }
 
     .custom-regex-row .remove-regex {
@@ -365,7 +365,7 @@
     <div id="custom-url-container">
       <div id="url-template" class="custom-url-row hidden">
         <input type="text" class="url-pattern" placeholder="URL pattern (e.g., 'https://example.com/*')" />
-        <button type="button" class="remove-url">Remove</button>
+        <button type="button" class="remove-url">X</button>
       </div>
     </div>
     
@@ -381,11 +381,27 @@
     <h2>Custom Detection Patterns</h2>
     
     <div id="custom-regex-container">
+      <!-- Example custom regex -->
+      <div class="custom-regex-row">
+        <div class="row">
+          EXAMPLE
+          <input type="text" class="regex-name" value="API KEY" />
+          <input type="text" class="regex-pattern" value="/[A-Z0-9]{32}/" />
+        </div>
+        <div class="row">
+          <input type="text" class="regex-sample" value="A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P7" />
+        </div>
+      </div>
+      <!-- Existing code -->
       <div id="regex-template" class="custom-regex-row hidden">
-        <input type="text" class="regex-name" placeholder="Name (e.g. 'Credit Card')" />
-        <input type="text" class="regex-pattern" placeholder="Regex pattern" />
-        <input type="text" class="regex-sample" placeholder="Sample replacement data" />
-        <button type="button" class="remove-regex">Remove</button>
+        <div class="row">
+          <input type="text" class="regex-name" placeholder="Name (e.g. 'Credit Card')" />
+          <input type="text" class="regex-pattern" placeholder="Regex pattern" />
+        </div>
+        <div class="row">
+          <input type="text" class="regex-sample" placeholder="Sample replacement data" />
+          <button type="button" class="remove-regex">Remove</button>
+        </div>
       </div>
     </div>
     

@@ -45,10 +45,22 @@ function saveOptions(e) {
   // Combine all regex patterns
   const allRegexPatterns = { ...defaultRegexPatterns, ...customRegexPatterns };
   
+  // Get custom URL patterns
+  const customUrlElements = document.querySelectorAll('.custom-url-row:not(#url-template)');
+  const customUrls = [];
+  
+  customUrlElements.forEach(row => {
+    const urlPattern = row.querySelector('.url-pattern').value.trim();
+    if (urlPattern) {
+      customUrls.push(urlPattern);
+    }
+  });
+  
   // Save to browser storage
   browser.storage.local.set({
     mode: mode,
-    regexPatterns: allRegexPatterns
+    regexPatterns: allRegexPatterns,
+    customUrls: customUrls
   }).then(() => {
     // Update status to let user know options were saved
     const status = document.getElementById('status');
@@ -61,20 +73,24 @@ function saveOptions(e) {
 
 // Fetch default patterns from storage when options page loads
 function initializeOptionsPage() {
-  browser.storage.local.get(['regexPatterns']).then((result) => {
+  browser.storage.local.get(['regexPatterns', 'customUrls']).then((result) => {
     const storedPatterns = result.regexPatterns || {};
+    const storedUrls = result.customUrls || window.OptimusPII.DEFAULT_URLS || [];
     
-    // Now restore options with the retrieved patterns
-    restoreOptions(storedPatterns);
+    // Now restore options with the retrieved patterns and URLs
+    restoreOptions(storedPatterns, storedUrls);
   });
 
   document.getElementById('add-regex').addEventListener('click', () => {
     addCustomRegexRow();
   });
-
+  
+  document.getElementById('add-url').addEventListener('click', () => {
+    addCustomUrlRow();
+  });
 }
 
-function restoreOptions(storedPatterns) {
+function restoreOptions(storedPatterns, storedUrls) {
   browser.storage.local.get(['mode']).then((result) => {
     // Default to "interactive" if not set
     const mode = result.mode || 'interactive';
@@ -98,6 +114,22 @@ function restoreOptions(storedPatterns) {
     // Add an empty row if no custom patterns exist
     if (!document.querySelector('.custom-regex-row:not(#regex-template)')) {
       addCustomRegexRow();
+    }
+    
+    // Populate URL patterns
+    const customUrlContainer = document.getElementById('custom-url-container');
+    // Clear existing URL rows except template
+    const existingUrlRows = document.querySelectorAll('.custom-url-row:not(#url-template)');
+    existingUrlRows.forEach(row => row.remove());
+    
+    // Add saved URLs
+    if (storedUrls && storedUrls.length > 0) {
+      storedUrls.forEach(url => {
+        addCustomUrlRow(url);
+      });
+    } else {
+      // Add at least one empty row
+      addCustomUrlRow();
     }
   });
 }
@@ -290,6 +322,32 @@ function addCustomRegexRow(name = '', pattern = '', enabled = true) {
   
   // Add remove button functionality
   newRow.querySelector('.remove-regex').addEventListener('click', function() {
+    newRow.remove();
+  });
+  
+  // Add to container
+  container.appendChild(newRow);
+}
+
+function addCustomUrlRow(url = '') {
+  const container = document.getElementById('custom-url-container');
+  const template = document.getElementById('url-template');
+  
+  // Clone the template
+  const newRow = template.cloneNode(true);
+  newRow.id = '';
+  newRow.classList.remove('hidden');
+  
+  // Set value if provided
+  newRow.querySelector('.url-pattern').value = url;
+  
+  // Add remove button functionality
+  newRow.querySelector('.remove-url').addEventListener('click', function() {
+    const urlPattern = newRow.querySelector('.url-pattern').value.trim();
+    if (window.OptimusPII.DEFAULT_URLS && window.OptimusPII.DEFAULT_URLS.includes(urlPattern)) {
+      alert('Cannot remove default URL pattern');
+      return;
+    }
     newRow.remove();
   });
   

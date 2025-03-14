@@ -1,3 +1,12 @@
+// Define browser API reference safely
+const api = (function() {
+  try {
+    return browser || chrome;
+  } catch (e) {
+    return chrome;
+  }
+})();
+
 // Default regex patterns
 const DEFAULT_REGEX_PATTERNS = {
     "Email Address": {
@@ -57,10 +66,10 @@ const DEFAULT_URLS = [
 ];
 
 function initializeRegexPatterns() {
-  browser.storage.local.get(['regexPatterns'], function(result) {
+  api.storage.local.get(['regexPatterns'], function(result) {
     // If no regex patterns exist in storage, initialize with defaults
     if (!result.regexPatterns) {
-      browser.storage.local.set({
+      api.storage.local.set({
         mode: 'interactive',
         regexPatterns: DEFAULT_REGEX_PATTERNS
       });
@@ -69,10 +78,10 @@ function initializeRegexPatterns() {
 }
 
 function initializeCustomUrls() {
-  browser.storage.local.get(['customUrls'], function(result) {
+  api.storage.local.get(['customUrls'], function(result) {
     // If no custom URLs exist in storage, initialize with defaults
     if (!result.customUrls) {
-      browser.storage.local.set({
+      api.storage.local.set({
         customUrls: DEFAULT_URLS
       });
     }
@@ -86,7 +95,7 @@ async function registerContentScriptsForUrls(urls) {
   
   try {
     // First attempt to register directly - this works if no script with this ID exists yet
-    await browser.scripting.registerContentScripts([{
+    await api.scripting.registerContentScripts([{
       id: "pii-detector",
       matches: urls,
       js: ["content.js"],
@@ -100,7 +109,7 @@ async function registerContentScriptsForUrls(urls) {
       
       try {
         // First try to update the script directly
-        await browser.scripting.updateContentScripts([{
+        await api.scripting.updateContentScripts([{
           id: "pii-detector",
           matches: urls
         }]);
@@ -109,8 +118,8 @@ async function registerContentScriptsForUrls(urls) {
         // If update failed, try unregister and re-register
         
         try {
-          await browser.scripting.unregisterContentScripts({ids: ["pii-detector"]});
-          await browser.scripting.registerContentScripts([{
+          await api.scripting.unregisterContentScripts({ids: ["pii-detector"]});
+          await api.scripting.registerContentScripts([{
             id: "pii-detector",
             matches: urls,
             js: ["content.js"],
@@ -123,8 +132,8 @@ async function registerContentScriptsForUrls(urls) {
           if (finalError.message && finalError.message.includes("does not exist")) {
             
             try {
-              await browser.scripting.unregisterContentScripts();
-              await browser.scripting.registerContentScripts([{
+              await api.scripting.unregisterContentScripts();
+              await api.scripting.registerContentScripts([{
                 id: "pii-detector",
                 matches: urls,
                 js: ["content.js"],
@@ -133,15 +142,12 @@ async function registerContentScriptsForUrls(urls) {
               }]);
             }
             catch (lastError) {
-              console.error('Final attempt to register content scripts failed:', lastError);
             }
           } else {
-            console.error('Failed to register content scripts after unregister:', finalError);
           }
         }
       }
     } else {
-      console.error('Error registering content scripts:', error);
     }
   }
 
@@ -153,12 +159,12 @@ async function registerContentScriptsForUrls(urls) {
       // e.g., "https://*.example.com/*" -> "*://*.example.com/*"
       const queryPattern = urlPattern.replace(/^https?:/, "*:");
       
-      const matchingTabs = await browser.tabs.query({url: queryPattern});
+      const matchingTabs = await api.tabs.query({url: queryPattern});
       
       if (matchingTabs.length) {
         for (const tab of matchingTabs) {
           try {
-            await browser.scripting.executeScript({
+            await api.scripting.executeScript({
               target: {tabId: tab.id, allFrames: true},
               files: ["content.js"]
             });
@@ -181,7 +187,7 @@ function initialize() {
 initialize();
 
 // Listen for changes to custom URLs
-browser.storage.onChanged.addListener((changes, area) => {
+api.storage.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes.customUrls) {
     registerContentScriptsForUrls(changes.customUrls.newValue);
   }

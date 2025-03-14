@@ -3,13 +3,12 @@
   "name": "OptimusPII",
   "version": "1.0",
   "description": "Saves from sharing your PII over the Internet",
+  "author": "shreesh1",
+  "homepage_url":"https://github.com/shreesh1/OptimusPII",
   "permissions": [
-    "webRequest",
-    "webRequestBlocking",
     "scripting",
     "storage",
     "activeTab",
-    "webRequestFilterResponse",
     "contextMenus",
     "scripting",
     "clipboardRead"
@@ -35,6 +34,6 @@
     "open_in_tab": true
   },
   "background": {
-    "scripts":["background.js"]
+    "scripts": ["background.js"]
   }
 }

@@ -62,7 +62,7 @@ function saveOptions(e) {
   });
   
   // Save to browser storage
-  browser.storage.local.set({
+  api.storage.local.set({
     mode: mode,
     regexPatterns: allRegexPatterns,
     customUrls: customUrls
@@ -78,7 +78,7 @@ function saveOptions(e) {
 
 // Fetch default patterns from storage when options page loads
 function initializeOptionsPage() {
-  browser.storage.local.get(['regexPatterns', 'customUrls']).then((result) => {
+  api.storage.local.get(['regexPatterns', 'customUrls']).then((result) => {
     const storedPatterns = result.regexPatterns || {};
     const storedUrls = result.customUrls || window.OptimusPII.DEFAULT_URLS || [];
     
@@ -96,7 +96,7 @@ function initializeOptionsPage() {
 }
 
 function restoreOptions(storedPatterns, storedUrls) {
-  browser.storage.local.get(['mode']).then((result) => {
+  api.storage.local.get(['mode']).then((result) => {
     // Default to "interactive" if not set
     const mode = result.mode || 'interactive';
     document.querySelector(`input[value="${mode}"]`).checked = true;

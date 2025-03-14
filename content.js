@@ -1,5 +1,14 @@
 // content.js
 
+// Define browser API reference safely
+const api = (function() {
+  try {
+    return browser || chrome;
+  } catch (e) {
+    return chrome;
+  }
+})();
+
 // Default configuration
 let config = {
   mode: "interactive",
@@ -11,7 +20,7 @@ let isMonitoringEnabled = true;
 
 // Function to check if current URL should be monitored (non-async version)
 function checkIfShouldMonitor() {
-  browser.storage.local.get('customUrls').then(result => {
+  api.storage.local.get('customUrls').then(result => {
     const customUrls = result.customUrls || [];
     const currentUrl = window.location.href;
     
@@ -38,7 +47,7 @@ function checkIfShouldMonitor() {
 }
 
 // Load configuration from storage
-browser.storage.local.get(['mode', 'regexPatterns', 'customUrls']).then((result) => {
+api.storage.local.get(['mode', 'regexPatterns', 'customUrls']).then((result) => {
   if (result.mode) {
     config.mode = result.mode;
     console.log('PII blocker mode:', config.mode);
@@ -55,7 +64,7 @@ browser.storage.local.get(['mode', 'regexPatterns', 'customUrls']).then((result)
 });
 
 // Listen for changes to configuration
-browser.storage.onChanged.addListener((changes, area) => {
+api.storage.onChanged.addListener((changes, area) => {
   if (area === 'local') {
     if (changes.mode) {
       config.mode = changes.mode.newValue;

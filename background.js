@@ -13,7 +13,7 @@ const DEFAULT_REGEX_PATTERNS = {
       sampleData: "4111-1111-1111-1111"
     },
     "Phone Number": {
-      pattern: /(?:\+\d{1,3}[\s-]?)?\(?(?:\d{1,4})\)?[\s.-]?\d{1,4}[\s.-]?\d{1,9}/g.source,
+      pattern: /(?:\+\d{1,3}[\s-]?)?\(?(?:\d{3,4})\)?[\s.-]?\d{3}[\s.-]?\d{3,4}/g.source,
       enabled: true,
       isDefault: true,
       sampleData: "(555) 555-5555"
@@ -41,7 +41,13 @@ const DEFAULT_REGEX_PATTERNS = {
       enabled: true,
       isDefault: true,
       sampleData: "ABCDE1234F"
-    }
+    },
+    "Password": {
+      pattern: /\b(?=\S*[0-9])(?=\S*[a-z])(?=\S*[A-Z])(?=\S*[!@#$%^&*()_\-+={}[\]\\|:;'",.<>/?])\S{8,32}\b/g.source,
+      enabled: true,
+      isDefault: true,
+      sampleData: "P@ssw0rd123!"
+    },
   };
 
 // Default URLs

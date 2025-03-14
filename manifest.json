@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "OptimusPII",
   "version": "1.0",
-  "description": "Saves from pasting data",
+  "description": "Saves from sharing your PII over the Internet",
   "permissions": [
     "webRequest",
     "webRequestBlocking",

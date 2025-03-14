@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title> OptimusPII </title>
   <style>
@@ -12,7 +13,7 @@
       line-height: 1.5;
       background-color: #fafafa;
     }
-    
+
     h1 {
       font-weight: 400;
       color: #222;
@@ -20,7 +21,7 @@
       font-size: 28px;
       letter-spacing: -0.5px;
     }
-    
+
     h2 {
       font-weight: 500;
       font-size: 18px;
@@ -28,7 +29,7 @@
       margin-bottom: 20px;
       color: #333;
     }
-    
+
     .setting-group {
       background-color: #fff;
       padding: 30px;
@@ -36,17 +37,17 @@
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
-    
+
     .option {
       margin-bottom: 16px;
       display: flex;
       align-items: flex-start;
     }
-    
+
     .option:last-child {
       margin-bottom: 0;
     }
-    
+
     .option input[type="radio"] {
       margin-top: 5px;
       appearance: none;
@@ -58,28 +59,28 @@
       transition: all 0.2s ease;
       cursor: pointer;
     }
-    
+
     .option input[type="radio"]:checked {
       border-color: #0078d7;
       box-shadow: inset 0 0 0 4px #0078d7;
     }
-    
+
     .option-content {
       margin-left: 12px;
     }
-    
+
     .option-title {
       font-weight: 500;
       margin-bottom: 4px;
       display: block;
       color: #222;
     }
-    
+
     .option-description {
       color: #666;
       font-size: 14px;
     }
-    
+
     button {
       margin-top: 10px;
       padding: 10px 20px;
@@ -92,11 +93,11 @@
       font-size: 14px;
       transition: background-color 0.2s;
     }
-    
+
     button:hover {
       background-color: #0069c0;
     }
-    
+
     .status {
       margin-top: 16px;
       padding: 5px;
@@ -105,7 +106,7 @@
       transition: opacity 0.5s;
       font-size: 14px;
     }
-    
+
     .section {
       margin-bottom: 30px;
       background-color: #fff;
@@ -113,40 +114,47 @@
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
-    
+
     .hidden {
       display: none !important;
     }
-    
-    .custom-regex-row, .custom-url-row {
+
+    .custom-regex-row,
+    .custom-url-row {
       margin-bottom: 16px;
       display: flex;
       align-items: center;
       gap: 12px;
     }
-    
-    .regex-name, .regex-pattern, .url-pattern {
+
+    .regex-name,
+    .regex-pattern,
+    .url-pattern {
       padding: 10px;
       border: 1px solid #ddd;
       border-radius: 4px;
       font-size: 14px;
       transition: border-color 0.2s;
     }
-    
-    .regex-name:focus, .regex-pattern:focus, .url-pattern:focus {
+
+    .regex-name:focus,
+    .regex-pattern:focus,
+    .url-pattern:focus {
       border-color: #0078d7;
       outline: none;
     }
-    
+
     .regex-name {
       width: 30%;
     }
-    
-    .regex-pattern, .url-pattern {
+
+    .regex-pattern,
+    .url-pattern {
       flex-grow: 1;
     }
-    
-    .remove-regex, .remove-url {
+
+    .remove-regex,
+    .remove-url {
       padding: 6px 12px;
       background-color: #f5f5f5;
       color: #666;
@@ -155,13 +163,15 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    
-    .remove-regex:hover, .remove-url:hover {
+
+    .remove-regex:hover,
+    .remove-url:hover {
       background-color: #f44336;
       color: white;
     }
-    
-    #add-regex, #add-url {
+
+    #add-regex,
+    #add-url {
       margin-top: 10px;
       padding: 8px 16px;
       background-color: #f5f5f5;
@@ -171,18 +181,19 @@
       cursor: pointer;
       font-size: 14px;
     }
-    
-    #add-regex:hover, #add-url:hover {
+
+    #add-regex:hover,
+    #add-url:hover {
       background-color: #e0e0e0;
     }
-    
+
     .help-text {
       font-size: 13px;
       color: #666;
       margin-top: 6px;
       font-style: italic;
     }
-    
+
     .regex-sample {
       padding: 10px;
       border: 1px solid #ddd;
@@ -191,12 +202,12 @@
       width: 150px;
       transition: border-color 0.2s;
     }
-    
+
     .regex-sample:focus {
       border-color: #0078d7;
       outline: none;
     }
-    
+
     .custom-regex-row {
       display: flex;
       flex-direction: column;
@@ -269,9 +280,11 @@
       0% {
         box-shadow: 0 0 0 0 rgba(0, 120, 215, 0.7);
       }
+
       70% {
         box-shadow: 0 0 0 6px rgba(0, 120, 215, 0);
       }
+
       100% {
         box-shadow: 0 0 0 0 rgba(0, 120, 215, 0);
       }
@@ -292,13 +305,13 @@
       align-items: center;
       margin-bottom: 30px;
     }
-    
+
     .logo {
       width: 64px;
       height: 64px;
       margin-right: 20px;
     }
-    
+
     .page-title {
       font-weight: 400;
       color: #222;
@@ -308,23 +321,25 @@
     }
   </style>
 </head>
+
 <body>
   <div class="header-container">
     <img src="../icon/icon.png" alt="OptimusPII Logo" class="logo">
     <h1 class="page-title">OptimusPII</h1>
   </div>
-  
+
   <div class="setting-group">
     <h2>Operation Mode</h2>
-    
+
     <div class="option">
       <input type="radio" id="interactive" name="mode" value="interactive">
       <div class="option-content">
         <label class="option-title" for="interactive">Interactive</label>
-        <div class="option-description">Show a popup with highlighted sensitive information and ask for confirmation</div>
+        <div class="option-description">Show a popup with highlighted sensitive information and ask for confirmation
+        </div>
       </div>
     </div>
-    
+
     <div class="option">
       <input type="radio" id="block-and-alert" name="mode" value="block-and-alert">
       <div class="option-content">
@@ -332,7 +347,7 @@
         <div class="option-description">Block paste operations with sensitive information and show a notification</div>
       </div>
     </div>
-    
+
     <div class="option">
       <input type="radio" id="alert-only" name="mode" value="alert-only">
       <div class="option-content">
@@ -340,7 +355,7 @@
         <div class="option-description">Allow paste but show a warning when sensitive information is detected</div>
       </div>
     </div>
-    
+
     <div class="option">
       <input type="radio" id="silent-block" name="mode" value="silent-block">
       <div class="option-content">
@@ -348,7 +363,7 @@
         <div class="option-description">Block sensitive pastes without any notification</div>
       </div>
     </div>
-    
+
     <div class="option">
       <input type="radio" id="disabled" name="mode" value="disabled">
       <div class="option-content">
@@ -357,29 +372,30 @@
       </div>
     </div>
   </div>
-  
+
   <div class="section">
     <h2>Websites to Monitor</h2>
-    <div class="help-text">Use patterns like "https://example.com/*" to match all pages on a domain. Use "*://*.example.com/*" to match all subdomains.</div>
-    
+    <div class="help-text">Use patterns like "https://example.com/*" to match all pages on a domain. Use
+      "*://*.example.com/*" to match all subdomains.</div>
+
     <div id="custom-url-container">
       <div id="url-template" class="custom-url-row hidden">
         <input type="text" class="url-pattern" placeholder="URL pattern (e.g., 'https://example.com/*')" />
         <button type="button" class="remove-url">X</button>
       </div>
     </div>
-    
+
     <button type="button" id="add-url">Add Website</button>
   </div>
-  
+
   <div class="section">
     <h2>Built-in Detection Patterns</h2>
     <div id="default-regex-container">
       <!-- Default regex patterns will be populated here -->
     </div>
-    
+
     <h2>Custom Detection Patterns</h2>
-    
+
     <div id="custom-regex-container">
       <!-- Example custom regex -->
       <div class="custom-regex-row">
@@ -404,16 +420,17 @@
         </div>
       </div>
     </div>
-    
+
     <button type="button" id="add-regex">Add Pattern</button>
     <div class="help-text">Sample data will be used as replacement when choosing to paste redacted values.</div>
   </div>
-  
+
   <button id="save" disabled>Apply Settings <span class="unsaved-indicator">Unsaved changes</span></button>
-  
+
   <div id="status" class="status">Settings saved</div>
-  
+
   <script src="../background.js"></script>
   <script src="options.js"></script>
 </body>
+
 </html>

@@ -2,58 +2,78 @@
 
 function saveOptions(e) {
   e.preventDefault();
-  
+
   // Get the selected mode
   const mode = document.querySelector('input[name="mode"]:checked').value;
-  
+
   // Process default regex patterns (keep track of enabled state)
   const defaultRegexElements = document.querySelectorAll('.default-regex-row');
   const defaultRegexPatterns = {};
-  
+
   defaultRegexElements.forEach(row => {
     const nameElement = row.querySelector('.regex-name');
     const name = nameElement.textContent;
     const enabled = row.querySelector('.toggle-regex').checked;
-    
+    const sampleInput = row.querySelector('.regex-sample');
+    const sampleData = sampleInput ? sampleInput.value : window.OptimusPII.DEFAULT_REGEX_PATTERNS[name].sampleData;
+
     if (window.OptimusPII.DEFAULT_REGEX_PATTERNS[name]) {
       defaultRegexPatterns[name] = {
         pattern: window.OptimusPII.DEFAULT_REGEX_PATTERNS[name].pattern,
         enabled: enabled,
-        isDefault: true
+        isDefault: true,
+        sampleData: sampleData
       };
     }
   });
-  
+
   // Get custom regex patterns
   const customRegexPatterns = {};
   const customRegexElements = document.querySelectorAll('.custom-regex-row:not(#regex-template)');
-  customRegexElements.forEach(row => {
+  customRegexElements.forEach((row, index) => {
+    if (index === 0) return;
     const nameInput = row.querySelector('.regex-name');
     const patternInput = row.querySelector('.regex-pattern');
+    const sampleInput = row.querySelector('.regex-sample');
     const enabled = row.querySelector('.toggle-regex').checked;
-    
+
     // Only save non-empty patterns with names
     if (nameInput.value.trim() && patternInput.value.trim()) {
       customRegexPatterns[nameInput.value.trim()] = {
         pattern: patternInput.value.trim(),
         enabled: enabled,
-        isDefault: false
+        isDefault: false,
+        sampleData: sampleInput.value.trim() || "REDACTED"
       };
     }
   });
-  
+
   // Combine all regex patterns
   const allRegexPatterns = { ...defaultRegexPatterns, ...customRegexPatterns };
-  
+
+  // Get custom URL patterns
+  const customUrlElements = document.querySelectorAll('.custom-url-row:not(#url-template)');
+  const customUrls = [];
+
+  customUrlElements.forEach(row => {
+    const urlPattern = row.querySelector('.url-pattern').value.trim();
+    if (urlPattern) {
+      customUrls.push(urlPattern);
+    }
+  });
+
   // Save to browser storage
-  browser.storage.local.set({
+  api.storage.local.set({
     mode: mode,
-    regexPatterns: allRegexPatterns
+    regexPatterns: allRegexPatterns,
+    customUrls: customUrls
   }).then(() => {
-    // Update status to let user know options were saved
+
+    window.OptimusPII.registerContentScriptsForUrls(customUrls);
+
     const status = document.getElementById('status');
     status.style.opacity = '1';
-    setTimeout(function() {
+    setTimeout(function () {
       status.style.opacity = '0';
     }, 2000);
   });
@@ -61,50 +81,70 @@ function saveOptions(e) {
 
 // Fetch default patterns from storage when options page loads
 function initializeOptionsPage() {
-  browser.storage.local.get(['regexPatterns']).then((result) => {
+  api.storage.local.get(['regexPatterns', 'customUrls']).then((result) => {
     const storedPatterns = result.regexPatterns || {};
-    
-    // Now restore options with the retrieved patterns
-    restoreOptions(storedPatterns);
+    const storedUrls = result.customUrls || window.OptimusPII.DEFAULT_URLS || [];
+
+    // Now restore options with the retrieved patterns and URLs
+    restoreOptions(storedPatterns, storedUrls);
   });
 
   document.getElementById('add-regex').addEventListener('click', () => {
     addCustomRegexRow();
   });
 
+  document.getElementById('add-url').addEventListener('click', () => {
+    addCustomUrlRow();
+  });
 }
 
-function restoreOptions(storedPatterns) {
-  browser.storage.local.get(['mode']).then((result) => {
+function restoreOptions(storedPatterns, storedUrls) {
+  api.storage.local.get(['mode']).then((result) => {
     // Default to "interactive" if not set
     const mode = result.mode || 'interactive';
     document.querySelector(`input[value="${mode}"]`).checked = true;
-    
+
     // Process patterns
     const defaultRegexContainer = document.getElementById('default-regex-container');
     defaultRegexContainer.innerHTML = ''; // Clear existing content
-    
+
     // Add all patterns from storage
     for (const [name, details] of Object.entries(storedPatterns)) {
       if (details.isDefault) {
         // Add default patterns
-        addDefaultRegexRow(name, details.pattern, details.enabled);
+        addDefaultRegexRow(name, details.pattern, details.enabled, details.sampleData);
       } else {
         // Add custom patterns
-        addCustomRegexRow(name, details.pattern, details.enabled);
+        addCustomRegexRow(name, details.pattern, details.enabled, details.sampleData);
       }
     }
-    
+
     // Add an empty row if no custom patterns exist
     if (!document.querySelector('.custom-regex-row:not(#regex-template)')) {
       addCustomRegexRow();
     }
+
+    // Populate URL patterns
+    const customUrlContainer = document.getElementById('custom-url-container');
+    // Clear existing URL rows except template
+    const existingUrlRows = document.querySelectorAll('.custom-url-row:not(#url-template)');
+    existingUrlRows.forEach(row => row.remove());
+
+    // Add saved URLs
+    if (storedUrls && storedUrls.length > 0) {
+      storedUrls.forEach(url => {
+        addCustomUrlRow(url);
+      });
+    } else {
+      // Add at least one empty row
+      addCustomUrlRow();
+    }
   });
 }
 
-function addDefaultRegexRow(name, pattern, enabled) {
+function addDefaultRegexRow(name, pattern, enabled, sampleData = '') {
   const container = document.getElementById('default-regex-container');
-  
+
   // Create row
   const row = document.createElement('div');
   row.className = 'default-regex-row';
@@ -115,8 +155,8 @@ function addDefaultRegexRow(name, pattern, enabled) {
     padding: 10px;
     background-color: #f9f9f9;
     border-radius: 4px;
-  `;
-  
+      `;
+
   // Create toggle switch
   const toggleSwitch = document.createElement('label');
   toggleSwitch.className = 'switch';
@@ -126,8 +166,9 @@ function addDefaultRegexRow(name, pattern, enabled) {
     width: 40px;
     height: 22px;
     margin-right: 12px;
+    flex-shrink: 0; /* Prevents the toggle from stretching */
   `;
-  
+
   const toggleInput = document.createElement('input');
   toggleInput.className = 'toggle-regex';
   toggleInput.type = 'checkbox';
@@ -137,7 +178,7 @@ function addDefaultRegexRow(name, pattern, enabled) {
     width: 0;
     height: 0;
   `;
-  
+
   const toggleSlider = document.createElement('span');
   toggleSlider.className = 'slider';
   toggleSlider.style.cssText = `
@@ -172,13 +213,13 @@ function addDefaultRegexRow(name, pattern, enabled) {
   toggleInput.addEventListener('change', function () {
     sliderHandle.style.transform =
       this.checked ? 'translateX(18px)' : 'translateX(0)';
-    toggleSlider.style.backgroundColor = 
+    toggleSlider.style.backgroundColor =
       this.checked ? '#0078d7' : '#ccc';
   });
-  
+
   toggleSwitch.appendChild(toggleInput);
   toggleSwitch.appendChild(toggleSlider);
-  
+
   // Create name element
   const nameElement = document.createElement('div');
   nameElement.className = 'regex-name';
@@ -186,8 +227,9 @@ function addDefaultRegexRow(name, pattern, enabled) {
   nameElement.style.cssText = `
     font-weight: 500;
     flex-grow: 1;
+    min-width: 150px; /* Ensure minimum width */
   `;
-  
+
   // Info button to view pattern
   const infoButton = document.createElement('button');
   infoButton.type = 'button';
@@ -200,34 +242,61 @@ function addDefaultRegexRow(name, pattern, enabled) {
     cursor: pointer;
     font-size: 13px;
     color: #333;
+    margin-right: 10px;
   `;
-  
+
   infoButton.addEventListener('click', () => {
     alert(`Pattern for ${name}:\n\n${pattern}`);
   });
-  
+
+  // Create sample data input
+  const sampleLabel = document.createElement('div');
+  sampleLabel.textContent = 'Sample replacement:';
+  sampleLabel.style.cssText = `
+    font-size: 13px;
+    color: #666;
+    margin-right: 5px;
+  `;
+
+  const sampleInput = document.createElement('input');
+  sampleInput.type = 'text';
+  sampleInput.className = 'regex-sample';
+  sampleInput.value = sampleData || '';
+  sampleInput.placeholder = 'Sample replacement data';
+  sampleInput.style.cssText = `
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    width: 180px;
+    margin-right: 10px;
+  `;
+
   // Add elements to row
   row.appendChild(toggleSwitch);
   row.appendChild(nameElement);
   row.appendChild(infoButton);
-  
+  row.appendChild(sampleLabel);
+  row.appendChild(sampleInput);
+
   // Add row to container
   container.appendChild(row);
 }
 
-function addCustomRegexRow(name = '', pattern = '', enabled = true) {
+function addCustomRegexRow(name = '', pattern = '', enabled = true, sampleData = '') {
   const container = document.getElementById('custom-regex-container');
   const template = document.getElementById('regex-template');
-  
+
   // Clone the template
   const newRow = template.cloneNode(true);
   newRow.id = '';
   newRow.classList.remove('hidden');
-  
+
   // Set values if provided
   newRow.querySelector('.regex-name').value = name;
   newRow.querySelector('.regex-pattern').value = pattern;
-  
+  newRow.querySelector('.regex-sample').value = sampleData;
+
   // Add toggle switch for custom patterns
   const toggleSwitch = document.createElement('label');
   toggleSwitch.className = 'switch';
@@ -239,7 +308,7 @@ function addCustomRegexRow(name = '', pattern = '', enabled = true) {
     margin-right: 12px;
     flex-shrink: 0; /* Prevents the toggle from stretching */
   `;
-  
+
   const toggleInput = document.createElement('input');
   toggleInput.className = 'toggle-regex';
   toggleInput.type = 'checkbox';
@@ -249,7 +318,7 @@ function addCustomRegexRow(name = '', pattern = '', enabled = true) {
     width: 0;
     height: 0;
   `;
-  
+
   const toggleSlider = document.createElement('span');
   toggleSlider.className = 'slider';
   toggleSlider.style.cssText = `
@@ -284,21 +353,47 @@ function addCustomRegexRow(name = '', pattern = '', enabled = true) {
   toggleInput.addEventListener('change', function () {
     sliderHandle.style.transform =
       this.checked ? 'translateX(18px)' : 'translateX(0)';
-    toggleSlider.style.backgroundColor = 
+    toggleSlider.style.backgroundColor =
       this.checked ? '#0078d7' : '#ccc';
   });
-  
+
   toggleSwitch.appendChild(toggleInput);
   toggleSwitch.appendChild(toggleSlider);
-  
+
   // Add toggle at the beginning of the row
   newRow.insertBefore(toggleSwitch, newRow.firstChild);
-  
+
   // Add remove button functionality
-  newRow.querySelector('.remove-regex').addEventListener('click', function() {
+  newRow.querySelector('.remove-regex').addEventListener('click', function () {
     newRow.remove();
   });
-  
+
+  // Add to container
+  container.appendChild(newRow);
+}
+
+function addCustomUrlRow(url = '') {
+  const container = document.getElementById('custom-url-container');
+  const template = document.getElementById('url-template');
+
+  // Clone the template
+  const newRow = template.cloneNode(true);
+  newRow.id = '';
+  newRow.classList.remove('hidden');
+
+  // Set value if provided
+  newRow.querySelector('.url-pattern').value = url;
+
+  // Add remove button functionality
+  newRow.querySelector('.remove-url').addEventListener('click', function () {
+    const urlPattern = newRow.querySelector('.url-pattern').value.trim();
+    if (window.OptimusPII.DEFAULT_URLS && window.OptimusPII.DEFAULT_URLS.includes(urlPattern)) {
+      alert('Cannot remove default URL pattern');
+      return;
+    }
+    newRow.remove();
+  });
+
   // Add to container
   container.appendChild(newRow);
 }

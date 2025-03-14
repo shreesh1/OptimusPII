@@ -118,14 +118,14 @@
       display: none;
     }
     
-    .custom-regex-row {
+    .custom-regex-row, .custom-url-row {
       margin-bottom: 16px;
       display: flex;
       align-items: center;
       gap: 12px;
     }
     
-    .regex-name, .regex-pattern {
+    .regex-name, .regex-pattern, .url-pattern {
       padding: 10px;
       border: 1px solid #ddd;
       border-radius: 4px;
@@ -133,7 +133,7 @@
       transition: border-color 0.2s;
     }
     
-    .regex-name:focus, .regex-pattern:focus {
+    .regex-name:focus, .regex-pattern:focus, .url-pattern:focus {
       border-color: #0078d7;
       outline: none;
     }
@@ -142,11 +142,11 @@
       width: 30%;
     }
     
-    .regex-pattern {
+    .regex-pattern, .url-pattern {
       flex-grow: 1;
     }
     
-    .remove-regex {
+    .remove-regex, .remove-url {
       padding: 6px 12px;
       background-color: #f5f5f5;
       color: #666;
@@ -156,12 +156,12 @@
       transition: all 0.2s;
     }
     
-    .remove-regex:hover {
+    .remove-regex:hover, .remove-url:hover {
       background-color: #f44336;
       color: white;
     }
     
-    #add-regex {
+    #add-regex, #add-url {
       margin-top: 10px;
       padding: 8px 16px;
       background-color: #f5f5f5;
@@ -172,8 +172,15 @@
       font-size: 14px;
     }
     
-    #add-regex:hover {
+    #add-regex:hover, #add-url:hover {
       background-color: #e0e0e0;
+    }
+    
+    .help-text {
+      font-size: 13px;
+      color: #666;
+      margin-top: 6px;
+      font-style: italic;
     }
     
     /* Alternative fix in your CSS */
@@ -227,6 +234,20 @@
         <div class="option-description">Turn off all detection functionality</div>
       </div>
     </div>
+  </div>
+  
+  <div class="section">
+    <h2>Websites to Monitor</h2>
+    <div class="help-text">Use patterns like "https://example.com/*" to match all pages on a domain. Use "*://*.example.com/*" to match all subdomains.</div>
+    
+    <div id="custom-url-container">
+      <div id="url-template" class="custom-url-row hidden">
+        <input type="text" class="url-pattern" placeholder="URL pattern (e.g., 'https://example.com/*')" />
+        <button type="button" class="remove-url">Remove</button>
+      </div>
+    </div>
+    
+    <button type="button" id="add-url">Add Website</button>
   </div>
   
   <div class="section">

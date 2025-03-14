@@ -6,8 +6,39 @@ let config = {
   regexPatterns: {} // Will contain both default and custom patterns
 };
 
+// Flag to track if monitoring should be active for current URL
+let isMonitoringEnabled = true;
+
+// Function to check if current URL should be monitored (non-async version)
+function checkIfShouldMonitor() {
+  browser.storage.local.get('customUrls').then(result => {
+    const customUrls = result.customUrls || [];
+    const currentUrl = window.location.href;
+    
+    // If there are no custom URLs, assume we should keep monitoring
+    // (This handles static registrations from manifest.json)
+    if (!customUrls || customUrls.length === 0) {
+      isMonitoringEnabled = true;
+      return;
+    }
+    
+    // Check if any pattern in customUrls matches the current URL
+    isMonitoringEnabled = customUrls.some(urlPattern => {
+      // Convert URL pattern to regex (handling wildcards)
+      const pattern = urlPattern.replace(/\./g, '\\.').replace(/\*/g, '.*');
+      const regex = new RegExp('^' + pattern + '$');
+      return regex.test(currentUrl);
+    });
+    
+    console.log('PII monitoring ' + (isMonitoringEnabled ? 'enabled' : 'disabled') + ' for this page');
+  }).catch(error => {
+    console.error('Error checking URL monitoring status:', error);
+    isMonitoringEnabled = true; // Default to enabled on error
+  });
+}
+
 // Load configuration from storage
-browser.storage.local.get(['mode', 'regexPatterns']).then((result) => {
+browser.storage.local.get(['mode', 'regexPatterns', 'customUrls']).then((result) => {
   if (result.mode) {
     config.mode = result.mode;
     console.log('PII blocker mode:', config.mode);
@@ -18,6 +49,9 @@ browser.storage.local.get(['mode', 'regexPatterns']).then((result) => {
     config.regexPatterns = result.regexPatterns;
     console.log('Regex patterns loaded:', Object.keys(config.regexPatterns));
   }
+  
+  // Check URL monitoring status
+  checkIfShouldMonitor();
 });
 
 // Listen for changes to configuration
@@ -31,6 +65,10 @@ browser.storage.onChanged.addListener((changes, area) => {
       config.regexPatterns = changes.regexPatterns.newValue;
       console.log('Regex patterns updated:', Object.keys(config.regexPatterns));
     }
+    if (changes.customUrls) {
+      // URL list changed, check if we should still monitor this page
+      checkIfShouldMonitor();
+    }
   }
 });
 
@@ -39,8 +77,8 @@ let pendingPasteEvent = null;
 let popupDismissTimeout = null;
 
 function handlePaste(event) {
-  // If the extension is disabled, do nothing
-  if (config.mode === "disabled") {
+  // If the extension is disabled OR URL monitoring is disabled, do nothing
+  if (config.mode === "disabled" || !isMonitoringEnabled) {
     return true;
   }
 

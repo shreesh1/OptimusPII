@@ -246,6 +246,46 @@
       background-color: #f44336;
       color: white;
     }
+
+    /* Button states */
+    #save {
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    #save:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    /* Visual indicator for unsaved changes */
+    .has-changes {
+      animation: pulse 2s infinite;
+      transform: scale(1.03);
+      box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.5);
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(0, 120, 215, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 6px rgba(0, 120, 215, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(0, 120, 215, 0);
+      }
+    }
+
+    /* Unsaved changes indicator */
+    .unsaved-indicator {
+      display: none;
+      font-size: 14px;
+      color: #d32f2f;
+      font-weight: 500;
+      margin-left: 12px;
+      vertical-align: middle;
+    }
   </style>
 </head>
 <body>
@@ -330,7 +370,7 @@
     <div class="help-text">Sample data will be used as replacement when choosing to paste redacted values.</div>
   </div>
   
-  <button id="save">Save Settings</button>
+  <button id="save" disabled>Apply Settings <span class="unsaved-indicator">Unsaved changes</span></button>
   
   <div id="status" class="status">Settings saved</div>
   

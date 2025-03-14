@@ -389,3 +389,95 @@ function addCustomUrlRow(url = '') {
 document.addEventListener('DOMContentLoaded', initializeOptionsPage);
 
 document.getElementById('save').addEventListener('click', saveOptions);
+
+// Add this after your initial document is loaded
+
+// Track if there are unsaved changes
+let hasUnsavedChanges = false;
+
+// Function to mark that changes have been made
+function markAsChanged() {
+  if (!hasUnsavedChanges) {
+    hasUnsavedChanges = true;
+    
+    // Enable the save button
+    document.getElementById('save').disabled = false;
+    
+    // Add visual indicator
+    document.getElementById('save').classList.add('has-changes');
+    document.querySelector('.unsaved-indicator').style.display = 'inline';
+    
+    // Add warning when trying to leave the page
+    window.addEventListener('beforeunload', beforeUnloadHandler);
+  }
+}
+
+// Function to reset changes state after saving
+function resetChangeState() {
+  hasUnsavedChanges = false;
+  document.getElementById('save').disabled = true;
+  document.getElementById('save').classList.remove('has-changes');
+  document.querySelector('.unsaved-indicator').style.display = 'none';
+  window.removeEventListener('beforeunload', beforeUnloadHandler);
+}
+
+// Warning when trying to leave with unsaved changes
+function beforeUnloadHandler(e) {
+  e.preventDefault();
+  e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+  return e.returnValue;
+}
+
+// Add change listeners to all form elements
+function addChangeListeners() {
+  // Radio buttons
+  document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', markAsChanged);
+  });
+  
+  // Add listeners to dynamic elements
+  const observer = new MutationObserver(mutations => {
+    mutations.forEach(mutation => {
+      if (mutation.addedNodes.length) {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeType === 1) { // Element node
+            node.querySelectorAll('input').forEach(input => {
+              input.addEventListener('input', markAsChanged);
+            });
+            node.querySelectorAll('button.remove-regex, button.remove-url').forEach(btn => {
+              btn.addEventListener('click', markAsChanged);
+            });
+          }
+        });
+      }
+    });
+  });
+  
+  // Observe containers that might have dynamic content
+  observer.observe(document.getElementById('custom-regex-container'), { childList: true, subtree: true });
+  observer.observe(document.getElementById('custom-url-container'), { childList: true, subtree: true });
+  observer.observe(document.getElementById('default-regex-container'), { childList: true, subtree: true });
+  
+  // Add button listeners
+  document.getElementById('add-regex').addEventListener('click', markAsChanged);
+  document.getElementById('add-url').addEventListener('click', markAsChanged);
+}
+
+// Modify your existing save function
+document.getElementById('save').addEventListener('click', function() {
+  // Your existing save code...
+  
+  // After successful save:
+  resetChangeState();
+  
+  // Your existing status message code...
+});
+
+// Initialize listeners once DOM is fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+  // Disable save button initially
+  document.getElementById('save').disabled = true;
+  
+  // Add change listeners
+  addChangeListeners();
+});

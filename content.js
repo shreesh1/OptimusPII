@@ -331,8 +331,45 @@ function showInteractivePopup(text, patterns = {}) {
     font-size: 13px;
     line-height: 1.5;
   `;
-  highlightedContent.innerHTML = highlightedText;
-  content.appendChild(highlightedContent);
+
+    const fragment = document.createDocumentFragment();
+    const textSegments = [];
+    let lastIndex = 0;
+
+    // Sort matches by start position (ascending)
+    const orderedMatches = [...allMatches].sort((a, b) => a.start - b.start);
+
+    // Create text nodes and highlighted spans
+    for (const match of orderedMatches) {
+      // Add text before match
+      if (match.start > lastIndex) {
+        const textBefore = document.createTextNode(text.substring(lastIndex, match.start));
+        fragment.appendChild(textBefore);
+      }
+
+      // Create highlighted span
+      const span = document.createElement('mark');
+      span.textContent = match.original;
+      span.setAttribute('title', match.name);
+
+      // Extract style from replacement string and apply it
+      const styleMatch = match.replacement.match(/style="([^"]+)"/);
+      if (styleMatch && styleMatch[1]) {
+        span.style.cssText = styleMatch[1];
+      }
+
+      fragment.appendChild(span);
+      lastIndex = match.end;
+    }
+
+    // Add remaining text after last match
+    if (lastIndex < text.length) {
+      const textAfter = document.createTextNode(text.substring(lastIndex));
+      fragment.appendChild(textAfter);
+    }
+
+    highlightedContent.appendChild(fragment);
+    content.appendChild(highlightedContent);
 
   // Create action buttons with minimalist design
   const buttonContainer = document.createElement('div');

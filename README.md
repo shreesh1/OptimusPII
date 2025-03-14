@@ -64,12 +64,20 @@ The extension monitors paste events on web pages and checks for patterns that ma
 - **Passwords**: Common password patterns with symbols, numbers, and mixed case
 - **Custom Patterns**: User-defined regex patterns for detecting specific types of sensitive information
 
-## Installation
+## Developer Installation
 
-Load the extension in your browser:
+### Chrome/
+1. Download the source code
+2. Go to `chrome://extensions/` (Chrome)
+3. Enable "Developer mode"
+4. Click "Load unpacked"
+5. Select the extension folder ( If issues rename manifest_chrome.json to manifest.json )
 
-1. Chrome/Edge: Go to Extensions > Load unpacked > Select the extension folder
-2. Firefox: Go to about:debugging > This Firefox > Load Temporary Add-on > Select manifest.json
+### Firefox
+1. Download the source code
+2. Go to `about:debugging#/runtime/this-firefox`
+3. Click "Load Temporary Add-on"
+4. Select the manifest_firefox.json file ( If issues rename manifest_firefox.json to manifest.json )
 
 ## Supported Websites
 
@@ -78,6 +86,8 @@ By default, the extension monitors:
 - Claude AI (https://claude.ai/*)
 
 You can add or remove website patterns through the options page.
+
+> Note : Tested it on google also, it works. Don't give them everything.
 
 ## Configuration Options
 

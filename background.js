@@ -3,37 +3,44 @@ const DEFAULT_REGEX_PATTERNS = {
     "Email Address": {
       pattern: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g.source,
       enabled: true,
-      isDefault: true
+      isDefault: true,
+      sampleData: "example@redacted.com"
     },
     "Credit Card Number": {
       pattern: /(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|6(?:011|5[0-9]{2})[0-9]{12}|(?:2131|1800|35\d{3})\d{11}|(?:(?:5[0678]\d\d|6304|6390|67\d\d)\d{8,15}))([-\s]?[0-9]{4})?/g.source,
       enabled: true,
-      isDefault: true
+      isDefault: true,
+      sampleData: "4111-1111-1111-1111"
     },
     "Phone Number": {
       pattern: /(?:\+\d{1,3}[\s-]?)?\(?(?:\d{1,4})\)?[\s.-]?\d{1,4}[\s.-]?\d{1,9}/g.source,
       enabled: true,
-      isDefault: true
+      isDefault: true,
+      sampleData: "(555) 555-5555"
     },
     "Social Security Number": {
       pattern: /\b(?!000|666|9\d{2})([0-8]\d{2}|7([0-6]\d|7[012]))([-\s]?)(?!00)\d\d\3(?!0000)\d{4}\b/g.source,
       enabled: true,
-      isDefault: true
+      isDefault: true,
+      sampleData: "123-45-6789"
     },
     "Passport Number": {
       pattern: /\b[A-Z]{1,2}[0-9]{6,9}\b/g.source,
       enabled: true,
-      isDefault: true
+      isDefault: true,
+      sampleData: "A1234567"
     },
     "Aadhaar Number": {
       pattern: /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g.source,
       enabled: true,
-      isDefault: true
+      isDefault: true,
+      sampleData: "1234 5678 9012"
     },
     "PAN Card": {
       pattern: /\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b/g.source,
       enabled: true,
-      isDefault: true
+      isDefault: true,
+      sampleData: "ABCDE1234F"
     }
   };
 

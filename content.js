@@ -76,6 +76,7 @@ browser.storage.onChanged.addListener((changes, area) => {
 let pendingPasteEvent = null;
 let popupDismissTimeout = null;
 
+// Update handlePaste to store sample data when processing matches
 function handlePaste(event) {
   // If the extension is disabled OR URL monitoring is disabled, do nothing
   if (config.mode === "disabled" || !isMonitoringEnabled) {
@@ -126,6 +127,12 @@ function handlePaste(event) {
     // Log the detection (happens in all non-disabled modes)
     console.log(`${piiMessage} detected in paste:`, pastedText);
 
+    // Store sample data for use in the popup
+    const patternSamples = {};
+    for (const [name, matchedItems] of Object.entries(matches)) {
+      patternSamples[name] = config.regexPatterns[name].sampleData || "REDACTED";
+    }
+
     // Handle based on mode
     switch (config.mode) {
       case "interactive":
@@ -136,11 +143,13 @@ function handlePaste(event) {
         // Store the event for later use if user allows paste
         pendingPasteEvent = {
           targetElement: event.target,
-          text: pastedText
+          text: pastedText,
+          samples: patternSamples,
+          patternMatches: matches  // Store matched patterns and their matches
         };
 
         // Show interactive popup with highlighted sensitive data
-        showInteractivePopup(pastedText, patternObjects);
+        showInteractivePopup(pastedText, patternObjects, patternSamples);
         return false;
 
       case "block-and-alert":
@@ -189,7 +198,8 @@ function showNotification(message) {
   }, 3000);
 }
 
-function showInteractivePopup(text, patterns = {}) {
+// Modify showInteractivePopup to include a "Paste Sample" button
+function showInteractivePopup(text, patterns = {}, samples = {}) {
   // Remove any existing popup
   const existingPopup = document.getElementById('pii-blocker-popup');
   if (existingPopup) {
@@ -412,8 +422,86 @@ function showInteractivePopup(text, patterns = {}) {
     showNotification('Paste blocked: Sensitive information detected');
   });
 
+  // Add "Paste Sample" button
+  const pasteSampleButton = document.createElement('button');
+  pasteSampleButton.textContent = 'Paste Redacted';
+  pasteSampleButton.style.cssText = `
+    ${buttonBaseStyle}
+    background-color: white;
+    color: #2980b9;
+    border: 1px solid #2980b9;
+  `;
+  pasteSampleButton.addEventListener('mouseenter', () => {
+    pasteSampleButton.style.backgroundColor = '#f0f7fc';
+  });
+  pasteSampleButton.addEventListener('mouseleave', () => {
+    pasteSampleButton.style.backgroundColor = 'white';
+  });
+  pasteSampleButton.addEventListener('click', () => {
+    popup.remove();
+
+    if (pendingPasteEvent && pendingPasteEvent.targetElement) {
+      // Create a copy of the original text
+      let redactedText = pendingPasteEvent.text;
+      
+      // For each matched pattern type, replace all matches with the sample data
+      for (const [patternName, matches] of Object.entries(pendingPasteEvent.patternMatches)) {
+        const sampleValue = pendingPasteEvent.samples[patternName] || "REDACTED";
+        
+        // Sort matches by start position in descending order to replace from end to beginning
+        const sortedMatches = [...matches].sort((a, b) => {
+          const indexA = pendingPasteEvent.text.indexOf(a);
+          const indexB = pendingPasteEvent.text.indexOf(b);
+          return indexB - indexA;
+        });
+        
+        // Replace each match with the sample data
+        for (const match of sortedMatches) {
+          const index = redactedText.indexOf(match);
+          if (index !== -1) {
+            redactedText = redactedText.substring(0, index) + 
+                         sampleValue + 
+                         redactedText.substring(index + match.length);
+          }
+        }
+      }
+      
+      // Now paste the redacted text instead of the original
+      if (pendingPasteEvent.targetElement.tagName === 'INPUT' ||
+          pendingPasteEvent.targetElement.tagName === 'TEXTAREA') {
+        const start = pendingPasteEvent.targetElement.selectionStart || 0;
+        const end = pendingPasteEvent.targetElement.selectionEnd || 0;
+        const value = pendingPasteEvent.targetElement.value || '';
+
+        pendingPasteEvent.targetElement.value =
+          value.substring(0, start) +
+          redactedText +
+          value.substring(end);
+
+        pendingPasteEvent.targetElement.selectionStart =
+          pendingPasteEvent.targetElement.selectionEnd =
+          start + redactedText.length;
+      } else if (pendingPasteEvent.targetElement.isContentEditable) {
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+
+        const textNode = document.createTextNode(redactedText);
+        range.insertNode(textNode);
+
+        range.setStartAfter(textNode);
+        range.setEndAfter(textNode);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    }
+
+    pendingPasteEvent = null;
+    showNotification('Paste completed with redacted values');
+  });
+
   const allowButton = document.createElement('button');
-  allowButton.textContent = 'Allow Paste';
+  allowButton.textContent = 'Paste Original';
   allowButton.style.cssText = `
     ${buttonBaseStyle}
     background-color: #e74c3c;
@@ -463,6 +551,7 @@ function showInteractivePopup(text, patterns = {}) {
   });
 
   buttonContainer.appendChild(blockButton);
+  buttonContainer.appendChild(pasteSampleButton);
   buttonContainer.appendChild(allowButton);
 
   // Assemble popup

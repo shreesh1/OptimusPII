@@ -1,5 +1,7 @@
 // content.js
 
+let allowedFileUploads = new WeakMap();
+
 (function () {
   // Define browser API reference safely
   let api;
@@ -26,6 +28,8 @@
 
   // Flag to track if monitoring should be active for current URL
   let isMonitoringEnabled = true;
+
+  // Add this near the top of your script, with other variable declarations
 
   // Function to check if current URL should be monitored (non-async version)
   function checkIfShouldMonitor() {
@@ -659,6 +663,13 @@
     // Get the file input element
     const fileInput = event.target;
     
+    // Check if this is a re-triggered event for an explicitly allowed upload
+    if (allowedFileUploads.has(fileInput)) {
+      // This is our own triggered event after allowing files, let it pass through
+      allowedFileUploads.delete(fileInput); // Clean up the reference
+      return true;
+    }
+    
     // Check if there are any files selected
     if (fileInput.files && fileInput.files.length > 0) {
       let blockedFiles = [];
@@ -677,27 +688,30 @@
       
       // If there are blocked files
       if (blockedFiles.length > 0) {
-        event.preventDefault();
-        event.stopPropagation();
+        // Save the original files for alert-only mode
+        const originalFiles = Array.from(fileInput.files);
         
         // Handle based on mode
         switch (config.mode) {
           case "interactive":
-            showBlockedFilePopup(fileInput, blockedFiles);
+            showBlockedFilePopup(fileInput, blockedFiles, originalFiles);
             break;
             
           case "block-and-alert":
+            event.preventDefault();
+            event.stopPropagation();
             showNotification(`Upload blocked: ${blockedFiles.join(", ")} files not allowed`);
-            // Reset the file input
             fileInput.value = '';
             break;
             
           case "alert-only":
             showNotification(`Warning: Uploading sensitive file types: ${blockedFiles.join(", ")}`);
-            break;
+            // Don't prevent default - let the upload continue
+            return true;
             
           case "silent-block":
-            // Just block silently
+            event.preventDefault();
+            event.stopPropagation();
             fileInput.value = '';
             break;
         }
@@ -709,8 +723,8 @@
     return true;
   }
 
-  // New function to show interactive popup for blocked file uploads
-  function showBlockedFilePopup(fileInput, blockedFiles) {
+  // Replace the showBlockedFilePopup function with this improved version
+  function showBlockedFilePopup(fileInput, blockedFiles, originalFiles) {
     // Remove any existing popup
     const existingPopup = document.getElementById('pii-blocker-popup');
     if (existingPopup) {
@@ -849,9 +863,11 @@
     });
     blockButton.addEventListener('click', () => {
       popup.remove();
-      fileInput.value = '';
       showNotification('File upload blocked: Sensitive file types detected');
     });
+    
+    // Clear the file input to block the upload initially
+    fileInput.value = '';
 
     const allowButton = document.createElement('button');
     allowButton.textContent = 'Allow Upload';
@@ -867,22 +883,26 @@
       allowButton.style.opacity = '1';
     });
     allowButton.addEventListener('click', () => {
+      
       popup.remove();
+
       showNotification('File upload allowed');
       
-      // We need to re-create the file selection event
-      // This is tricky since we've already blocked the original event
-      // A workaround is to simulate the form submission if we can find it
-      const form = fileInput.form;
-      if (form) {
-        const submitEvent = new Event('submit', {
-          bubbles: true,
-          cancelable: true,
-        });
-        setTimeout(() => {
-          form.dispatchEvent(submitEvent);
-        }, 100);
-      }
+      // Temporarily remove our event listener
+      allowedFileUploads.set(fileInput, true);
+      
+      // Create a new DataTransfer object to reconstruct the FileList
+      const dataTransfer = new DataTransfer();
+      originalFiles.forEach(file => dataTransfer.items.add(file));
+      
+      // Set the files back to the input
+      fileInput.files = dataTransfer.files;
+      
+      // Trigger native change events (without our listener)
+      const changeEvent = new Event('change', { bubbles: true });
+      fileInput.dispatchEvent(changeEvent);
+      
+      
     });
 
     buttonContainer.appendChild(blockButton);
@@ -900,7 +920,10 @@
   // Add listeners for file inputs
   function addFileInputListeners(element) {
     if (element.tagName === 'INPUT' && element.type === 'file') {
-    element.addEventListener('change', handleFileUpload, true);
+      // Remove any existing listeners to avoid duplicates
+      element.removeEventListener('change', handleFileUpload, true);
+      // Add the listener
+      element.addEventListener('change', handleFileUpload, true);
     }
   }
 

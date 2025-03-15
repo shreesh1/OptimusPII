@@ -20,7 +20,8 @@
   // Default configuration
   let config = {
     mode: "interactive",
-    regexPatterns: {} // Will contain both default and custom patterns
+    regexPatterns: {}, // Will contain both default and custom patterns
+    blockFileTypes: {} // Default blocked file extensions
   };
 
   // Flag to track if monitoring should be active for current URL
@@ -53,7 +54,7 @@
   }
 
   // Load configuration from storage
-  api.storage.local.get(['mode', 'regexPatterns', 'customUrls']).then((result) => {
+  api.storage.local.get(['mode', 'regexPatterns', 'customUrls', 'blockFileTypes']).then((result) => {
     if (result.mode) {
       config.mode = result.mode;
     }
@@ -61,6 +62,11 @@
     // Load regex patterns or use defaults if not set
     if (result.regexPatterns) {
       config.regexPatterns = result.regexPatterns;
+    }
+
+    // Load blocked file types or use defaults
+    if (result.blockFileTypes) {
+      config.blockFileTypes = result.blockFileTypes;
     }
 
     // Check URL monitoring status
@@ -79,6 +85,9 @@
       if (changes.customUrls) {
         // URL list changed, check if we should still monitor this page
         checkIfShouldMonitor();
+      }
+      if (changes.blockFileTypes) {
+        config.blockFileTypes = changes.blockFileTypes.newValue;
       }
     }
   });
@@ -637,15 +646,273 @@
 
   // Add global paste event listener
   document.addEventListener('paste', handlePaste, true);
+  document.querySelectorAll('input[type="file"]').forEach(addFileInputListeners);
 
-  // Add listeners to all input and contenteditable elements
+
+  // New function to handle file upload detection
+  function handleFileUpload(event) {
+    // If the extension is disabled OR URL monitoring is disabled, do nothing
+    if (config.mode === "disabled" || !isMonitoringEnabled) {
+      return true;
+    }
+
+    // Get the file input element
+    const fileInput = event.target;
+    
+    // Check if there are any files selected
+    if (fileInput.files && fileInput.files.length > 0) {
+      let blockedFiles = [];
+      
+      // Check each file extension
+      for (let i = 0; i < fileInput.files.length; i++) {
+        const file = fileInput.files[i];
+        const fileName = file.name;
+        const fileExtension = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
+        
+        // If the file extension is in the blocked list
+        if (config.blockFileTypes.includes(fileExtension)) {
+          blockedFiles.push(`${fileName} (${fileExtension})`);
+        }
+      }
+      
+      // If there are blocked files
+      if (blockedFiles.length > 0) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Handle based on mode
+        switch (config.mode) {
+          case "interactive":
+            showBlockedFilePopup(fileInput, blockedFiles);
+            break;
+            
+          case "block-and-alert":
+            showNotification(`Upload blocked: ${blockedFiles.join(", ")} files not allowed`);
+            // Reset the file input
+            fileInput.value = '';
+            break;
+            
+          case "alert-only":
+            showNotification(`Warning: Uploading sensitive file types: ${blockedFiles.join(", ")}`);
+            break;
+            
+          case "silent-block":
+            // Just block silently
+            fileInput.value = '';
+            break;
+        }
+        
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  // New function to show interactive popup for blocked file uploads
+  function showBlockedFilePopup(fileInput, blockedFiles) {
+    // Remove any existing popup
+    const existingPopup = document.getElementById('pii-blocker-popup');
+    if (existingPopup) {
+      existingPopup.remove();
+    }
+
+    // Create popup container
+    const popup = document.createElement('div');
+    popup.id = 'pii-blocker-popup';
+    popup.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+      z-index: 10001;
+      width: 420px;
+      max-width: 90vw;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      border: 1px solid #eaeaea;
+    `;
+
+    // Create header
+    const header = document.createElement('div');
+    header.style.cssText = `
+      padding: 16px 20px;
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #e74c3c;
+      border-bottom: 1px solid #f5f5f5;
+    `;
+    header.textContent = 'Sensitive File Upload Detected';
+
+    const closeButton = document.createElement('button');
+    closeButton.innerHTML = '&times;';
+    closeButton.style.cssText = `
+      background: none;
+      border: none;
+      color: #909090;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    `;
+    closeButton.addEventListener('click', () => {
+      popup.remove();
+      fileInput.value = '';
+    });
+    header.appendChild(closeButton);
+
+    // Create content
+    const content = document.createElement('div');
+    content.style.cssText = `
+      padding: 20px;
+      overflow-y: auto;
+      max-height: 300px;
+      color: #333;
+    `;
+
+    const message = document.createElement('p');
+    message.style.cssText = 'margin: 0 0 16px 0; font-size: 14px; line-height: 1.5;';
+    message.textContent = `You're attempting to upload files that may contain sensitive code or credentials:`;
+    content.appendChild(message);
+
+    // Create list of blocked files
+    const fileList = document.createElement('ul');
+    fileList.style.cssText = `
+      margin: 0 0 20px 0;
+      padding-left: 20px;
+      font-family: monospace;
+    `;
+    
+    blockedFiles.forEach(file => {
+      const listItem = document.createElement('li');
+      listItem.textContent = file;
+      listItem.style.cssText = `
+        margin-bottom: 6px;
+        color: #e74c3c;
+      `;
+      fileList.appendChild(listItem);
+    });
+    
+    content.appendChild(fileList);
+
+    const warningText = document.createElement('p');
+    warningText.style.cssText = 'margin: 0; font-size: 14px; line-height: 1.5; color: #666;';
+    warningText.textContent = `Code files may contain API keys, credentials, or other sensitive information.`;
+    content.appendChild(warningText);
+
+    // Create action buttons
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.cssText = `
+      padding: 16px 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      border-top: 1px solid #f5f5f5;
+    `;
+
+    const buttonBaseStyle = `
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s, opacity 0.2s;
+    `;
+
+    const blockButton = document.createElement('button');
+    blockButton.textContent = 'Block Upload';
+    blockButton.style.cssText = `
+      ${buttonBaseStyle}
+      background-color: white;
+      color: #e74c3c;
+      border: 1px solid #e74c3c;
+    `;
+    blockButton.addEventListener('mouseenter', () => {
+      blockButton.style.backgroundColor = '#fff5f5';
+    });
+    blockButton.addEventListener('mouseleave', () => {
+      blockButton.style.backgroundColor = 'white';
+    });
+    blockButton.addEventListener('click', () => {
+      popup.remove();
+      fileInput.value = '';
+      showNotification('File upload blocked: Sensitive file types detected');
+    });
+
+    const allowButton = document.createElement('button');
+    allowButton.textContent = 'Allow Upload';
+    allowButton.style.cssText = `
+      ${buttonBaseStyle}
+      background-color: #e74c3c;
+      color: white;
+    `;
+    allowButton.addEventListener('mouseenter', () => {
+      allowButton.style.opacity = '0.9';
+    });
+    allowButton.addEventListener('mouseleave', () => {
+      allowButton.style.opacity = '1';
+    });
+    allowButton.addEventListener('click', () => {
+      popup.remove();
+      showNotification('File upload allowed');
+      
+      // We need to re-create the file selection event
+      // This is tricky since we've already blocked the original event
+      // A workaround is to simulate the form submission if we can find it
+      const form = fileInput.form;
+      if (form) {
+        const submitEvent = new Event('submit', {
+          bubbles: true,
+          cancelable: true,
+        });
+        setTimeout(() => {
+          form.dispatchEvent(submitEvent);
+        }, 100);
+      }
+    });
+
+    buttonContainer.appendChild(blockButton);
+    buttonContainer.appendChild(allowButton);
+
+    // Assemble popup
+    popup.appendChild(header);
+    popup.appendChild(content);
+    popup.appendChild(buttonContainer);
+
+    // Add popup to body
+    document.body.appendChild(popup);
+  }
+
+  // Add listeners for file inputs
+  function addFileInputListeners(element) {
+    if (element.tagName === 'INPUT' && element.type === 'file') {
+    element.addEventListener('change', handleFileUpload, true);
+    }
+  }
+
+  // Add listeners to all elements
   function addListenersToElement(element) {
     element.addEventListener('paste', handlePaste, true);
   }
 
-  // Add listeners to existing elements
+  // Add listeners to existing elements when DOM loads
   document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('input, textarea, [contenteditable="true"]').forEach(addListenersToElement);
+    document.querySelectorAll('input[type="file"]').forEach(addFileInputListeners);
   });
 
   // Monitor for new elements being added to the DOM
@@ -655,12 +922,20 @@
         for (let i = 0; i < mutation.addedNodes.length; i++) {
           const newNode = mutation.addedNodes[i];
           if (newNode.nodeType === 1) { // Element node
-            if (newNode.tagName === 'INPUT' || newNode.tagName === 'TEXTAREA' ||
+
+            if ((newNode.tagName === 'INPUT' || newNode.tagName === 'TEXTAREA') ||
               newNode.getAttribute('contenteditable') === 'true') {
               addListenersToElement(newNode);
             }
+
+            // Check for file inputs
+            if (newNode.tagName === 'INPUT' && newNode.type === 'file') {
+              addFileInputListeners(newNode);
+            }
+
             // Check children
             newNode.querySelectorAll('input, textarea, [contenteditable="true"]').forEach(addListenersToElement);
+            newNode.querySelectorAll('input[type="file"]').forEach(addFileInputListeners);
           }
         }
       }

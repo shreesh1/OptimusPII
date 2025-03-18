@@ -120,7 +120,8 @@
     }
 
     .custom-regex-row,
-    .custom-url-row {
+    .custom-url-row,
+    .file-ext-row {
       margin-bottom: 16px;
       display: flex;
       align-items: center;
@@ -129,7 +130,8 @@
 
     .regex-name,
     .regex-pattern,
-    .url-pattern {
+    .url-pattern,
+    .file-ext-pattern {
       padding: 10px;
       border: 1px solid #ddd;
       border-radius: 4px;
@@ -139,7 +141,8 @@
 
     .regex-name:focus,
     .regex-pattern:focus,
-    .url-pattern:focus {
+    .url-pattern:focus,
+    .file-ext-pattern:focus {
       border-color: #0078d7;
       outline: none;
     }
@@ -149,12 +152,14 @@
     }
 
     .regex-pattern,
-    .url-pattern {
+    .url-pattern,
+    .file-ext-pattern {
       flex-grow: 1;
     }
 
     .remove-regex,
-    .remove-url {
+    .remove-url,
+    .remove-ext {
       padding: 6px 12px;
       background-color: #f5f5f5;
       color: #666;
@@ -165,13 +170,15 @@
     }
 
     .remove-regex:hover,
-    .remove-url:hover {
+    .remove-url:hover,
+    .remove-ext:hover {
       background-color: #f44336;
       color: white;
     }
 
     #add-regex,
-    #add-url {
+    #add-url,
+    #add-ext {
       margin-top: 10px;
       padding: 8px 16px;
       background-color: #f5f5f5;
@@ -183,7 +190,8 @@
     }
 
     #add-regex:hover,
-    #add-url:hover {
+    #add-url:hover,
+    #add-ext:hover {
       background-color: #e0e0e0;
     }
 
@@ -371,6 +379,20 @@
         <div class="option-description">Turn off all detection functionality</div>
       </div>
     </div>
+  </div>
+
+  <div class="section">
+    <h2>File Extension to be blocked</h2>
+    <div class="help-text">Use file extensions that you want to be blocked</div>
+
+    <div id="custom-file-ext-container">
+      <div id="file-ext-template" class="file-ext-row hidden">
+        <input type="text" class="file-ext-pattern" placeholder="Add file extension" />
+        <button type="button" class="remove-ext">X</button>
+      </div>
+    </div>
+
+    <button type="button" id="add-ext">Add Extension</button>
   </div>
 
   <div class="section">

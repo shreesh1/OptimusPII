@@ -59,6 +59,12 @@ const DEFAULT_REGEX_PATTERNS = {
   },
 };
 
+// Default blocked file extensions
+const DEFAULT_FILE_TYPES = [
+  '.py',
+  '.cpp'
+];
+
 // Default URLs
 const DEFAULT_URLS = [
   "https://chatgpt.com/*",
@@ -91,6 +97,17 @@ function initializeCustomUrls() {
   });
 }
 
+function initializeFileExtensions() {
+  api.storage.local.get(['blockFileTypes'], function (result) {
+    // If no file types exist in storage, initialize with defaults
+    if (!result.blockFileTypes) {
+      api.storage.local.set({
+        blockFileTypes: DEFAULT_FILE_TYPES
+      });
+    }
+  });
+}
+
 async function registerContentScriptsForUrls(urls) {
 
   try {
@@ -110,7 +127,9 @@ async function registerContentScriptsForUrls(urls) {
       try {
         await api.scripting.updateContentScripts([{
           id: "pii-detector",
-          matches: urls
+          matches: urls,
+          runAt: "document_start",
+          allFrames: true
         }]);
       }
       catch (updateError) {
@@ -174,6 +193,7 @@ async function registerContentScriptsForUrls(urls) {
 function initialize() {
   initializeRegexPatterns();
   initializeCustomUrls();
+  initializeFileExtensions();
 }
 
 // Run initialization
@@ -193,5 +213,6 @@ if (typeof window !== 'undefined') {
   window.OptimusPII.initializeRegexPatterns = initializeRegexPatterns;
   window.OptimusPII.DEFAULT_REGEX_PATTERNS = DEFAULT_REGEX_PATTERNS;
   window.OptimusPII.DEFAULT_URLS = DEFAULT_URLS;
+  window.OptimusPII.DEFAULT_FILE_TYPES = DEFAULT_FILE_TYPES;
   window.OptimusPII.registerContentScriptsForUrls = registerContentScriptsForUrls;
 }

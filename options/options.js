@@ -62,11 +62,29 @@ function saveOptions(e) {
     }
   });
 
+
+  const fileExtElements = document.querySelectorAll('.file-ext-row:not(#file-ext-template)');
+  const blockFileTypes = [];
+
+  fileExtElements.forEach(row => {
+    const fileExt = row.querySelector('.file-ext-pattern').value.trim();
+    if (fileExt) {
+      if (!fileExt.startsWith('.')) {
+        blockFileTypes.push('.' + fileExt.toLowerCase());
+      } else {
+        blockFileTypes.push(fileExt.toLowerCase());
+      }
+    }
+  });
+
+
+
   // Save to browser storage
   api.storage.local.set({
     mode: mode,
     regexPatterns: allRegexPatterns,
-    customUrls: customUrls
+    customUrls: customUrls,
+    blockFileTypes: blockFileTypes
   }).then(() => {
 
     window.OptimusPII.registerContentScriptsForUrls(customUrls);
@@ -81,12 +99,13 @@ function saveOptions(e) {
 
 // Fetch default patterns from storage when options page loads
 function initializeOptionsPage() {
-  api.storage.local.get(['regexPatterns', 'customUrls']).then((result) => {
+  api.storage.local.get(['regexPatterns', 'customUrls','blockFileTypes']).then((result) => {
     const storedPatterns = result.regexPatterns || {};
     const storedUrls = result.customUrls || window.OptimusPII.DEFAULT_URLS || [];
+    const storedFileTypes = result.blockFileTypes || window.OptimusPII.DEFAULT_FILE_TYPES || [];
 
     // Now restore options with the retrieved patterns and URLs
-    restoreOptions(storedPatterns, storedUrls);
+    restoreOptions(storedPatterns, storedUrls, storedFileTypes);
   });
 
   document.getElementById('add-regex').addEventListener('click', () => {
@@ -96,9 +115,13 @@ function initializeOptionsPage() {
   document.getElementById('add-url').addEventListener('click', () => {
     addCustomUrlRow();
   });
+
+  document.getElementById('add-ext').addEventListener('click', () => {
+    addCustomExtensionRow();
+  });
 }
 
-function restoreOptions(storedPatterns, storedUrls) {
+function restoreOptions(storedPatterns, storedUrls, storedFileTypes) {
   api.storage.local.get(['mode']).then((result) => {
     // Default to "interactive" if not set
     const mode = result.mode || 'interactive';
@@ -124,8 +147,6 @@ function restoreOptions(storedPatterns, storedUrls) {
       addCustomRegexRow();
     }
 
-    // Populate URL patterns
-    const customUrlContainer = document.getElementById('custom-url-container');
     // Clear existing URL rows except template
     const existingUrlRows = document.querySelectorAll('.custom-url-row:not(#url-template)');
     existingUrlRows.forEach(row => row.remove());
@@ -138,6 +159,16 @@ function restoreOptions(storedPatterns, storedUrls) {
     } else {
       // Add at least one empty row
       addCustomUrlRow();
+    }
+
+    const existingFileExtRows = document.querySelectorAll('.file-ext-row:not(#file-ext-template)');
+    existingFileExtRows.forEach(row => row.remove());
+    if (storedFileTypes && storedFileTypes.length > 0) {
+      storedFileTypes.forEach(fileExt => {
+        addCustomExtensionRow(fileExt);
+      });
+    }  else {
+      addCustomExtensionRow();
     }
   });
 }
@@ -398,6 +429,27 @@ function addCustomUrlRow(url = '') {
   container.appendChild(newRow);
 }
 
+function addCustomExtensionRow(fileExt = '') {
+  const container = document.getElementById('custom-file-ext-container');
+  const template = document.getElementById('file-ext-template');
+
+  // Clone the template
+  const newRow = template.cloneNode(true);
+  newRow.id = '';
+  newRow.classList.remove('hidden');
+
+  // Set value if provided
+  newRow.querySelector('.file-ext-pattern').value = fileExt;
+
+  // Add remove button functionality
+  newRow.querySelector('.remove-ext').addEventListener('click', function () {
+    newRow.remove();
+  });
+
+  // Add to container
+  container.appendChild(newRow);
+}
+
 document.addEventListener('DOMContentLoaded', initializeOptionsPage);
 
 document.getElementById('save').addEventListener('click', saveOptions);
@@ -459,6 +511,9 @@ function addChangeListeners() {
             node.querySelectorAll('button.remove-regex, button.remove-url').forEach(btn => {
               btn.addEventListener('click', markAsChanged);
             });
+            node.querySelectorAll('button.remove-ext').forEach(btn => {
+              btn.addEventListener('click', markAsChanged);
+            });     
           }
         });
       }
@@ -469,10 +524,12 @@ function addChangeListeners() {
   observer.observe(document.getElementById('custom-regex-container'), { childList: true, subtree: true });
   observer.observe(document.getElementById('custom-url-container'), { childList: true, subtree: true });
   observer.observe(document.getElementById('default-regex-container'), { childList: true, subtree: true });
+  observer.observe(document.getElementById('custom-file-ext-container'), { childList: true, subtree: true });
 
   // Add button listeners
   document.getElementById('add-regex').addEventListener('click', markAsChanged);
   document.getElementById('add-url').addEventListener('click', markAsChanged);
+  document.getElementById('add-ext').addEventListener('click', markAsChanged);
 }
 
 // Modify your existing save function

@@ -1,0 +1,57 @@
+{
+  "manifest_version": 3,
+  "name": "OptimusPII",
+  "version": "1.0",
+  "description": "Saves from sharing your PII over the Internet",
+  "author": "shreesh1",
+  "homepage_url": "https://github.com/shreesh1/OptimusPII",
+  "icons": {
+    "48": "icon/icon.min.png",
+    "96": "icon/icon.png"
+  },
+  "permissions": [
+    "scripting",
+    "storage",
+    "activeTab",
+    "contextMenus",
+    "scripting",
+    "clipboardRead"
+  ],
+  "host_permissions": [
+    "*://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://claude.ai/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "action": {
+    "default_icon": {
+      "16": "icon/icon.min.png",
+      "24": "icon/icon.min.png",
+      "32": "icon/icon.min.png"
+    },
+    "default_title": "OptimusPII",
+    "default_popup": "options/options.html"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{ae50d192-ea57-4d28-a49a-46b39241df21}"
+    }
+  }
+}

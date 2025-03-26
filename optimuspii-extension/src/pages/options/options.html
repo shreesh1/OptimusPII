@@ -2,332 +2,8 @@
 <html>
 
 <head>
-  <title> OptimusPII </title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      padding: 40px;
-      max-width: 700px;
-      margin: 0 auto;
-      color: #333;
-      line-height: 1.5;
-      background-color: #fafafa;
-    }
-
-    h1 {
-      font-weight: 400;
-      color: #222;
-      margin-bottom: 30px;
-      font-size: 28px;
-      letter-spacing: -0.5px;
-    }
-
-    h2 {
-      font-weight: 500;
-      font-size: 18px;
-      margin-top: 0;
-      margin-bottom: 20px;
-      color: #333;
-    }
-
-    .setting-group {
-      background-color: #fff;
-      padding: 30px;
-      margin-bottom: 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .option {
-      margin-bottom: 16px;
-      display: flex;
-      align-items: flex-start;
-    }
-
-    .option:last-child {
-      margin-bottom: 0;
-    }
-
-    .option input[type="radio"] {
-      margin-top: 5px;
-      appearance: none;
-      width: 18px;
-      height: 18px;
-      border: 2px solid #ddd;
-      border-radius: 50%;
-      outline: none;
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-
-    .option input[type="radio"]:checked {
-      border-color: #0078d7;
-      box-shadow: inset 0 0 0 4px #0078d7;
-    }
-
-    .option-content {
-      margin-left: 12px;
-    }
-
-    .option-title {
-      font-weight: 500;
-      margin-bottom: 4px;
-      display: block;
-      color: #222;
-    }
-
-    .option-description {
-      color: #666;
-      font-size: 14px;
-    }
-
-    button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      background-color: #0078d7;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 14px;
-      transition: background-color 0.2s;
-    }
-
-    button:hover {
-      background-color: #0069c0;
-    }
-
-    .status {
-      margin-top: 16px;
-      padding: 5px;
-      color: #2e7d32;
-      opacity: 0;
-      transition: opacity 0.5s;
-      font-size: 14px;
-    }
-
-    .section {
-      margin-bottom: 30px;
-      background-color: #fff;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .custom-regex-row,
-    .custom-url-row,
-    .file-ext-row {
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .regex-name,
-    .regex-pattern,
-    .url-pattern,
-    .file-ext-pattern {
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-      transition: border-color 0.2s;
-    }
-
-    .regex-name:focus,
-    .regex-pattern:focus,
-    .url-pattern:focus,
-    .file-ext-pattern:focus {
-      border-color: #0078d7;
-      outline: none;
-    }
-
-    .regex-name {
-      width: 30%;
-    }
-
-    .regex-pattern,
-    .url-pattern,
-    .file-ext-pattern {
-      flex-grow: 1;
-    }
-
-    .remove-regex,
-    .remove-url,
-    .remove-ext {
-      padding: 6px 12px;
-      background-color: #f5f5f5;
-      color: #666;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .remove-regex:hover,
-    .remove-url:hover,
-    .remove-ext:hover {
-      background-color: #f44336;
-      color: white;
-    }
-
-    #add-regex,
-    #add-url,
-    #add-ext {
-      margin-top: 10px;
-      padding: 8px 16px;
-      background-color: #f5f5f5;
-      color: #333;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    #add-regex:hover,
-    #add-url:hover,
-    #add-ext:hover {
-      background-color: #e0e0e0;
-    }
-
-    .help-text {
-      font-size: 13px;
-      color: #666;
-      margin-top: 6px;
-      font-style: italic;
-    }
-
-    .regex-sample {
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-      width: 150px;
-      transition: border-color 0.2s;
-    }
-
-    .regex-sample:focus {
-      border-color: #0078d7;
-      outline: none;
-    }
-
-    .custom-regex-row {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 16px;
-      padding: 10px;
-      background-color: #f9f9f9;
-      border-radius: 4px;
-      gap: 12px;
-    }
-
-    .custom-regex-row .row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .custom-regex-row .regex-name,
-    .custom-regex-row .regex-pattern,
-    .custom-regex-row .regex-sample {
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-      flex: 1;
-    }
-
-    .custom-regex-row .regex-name,
-    .custom-regex-row .regex-sample {
-      flex: 2;
-    }
-
-    .custom-regex-row .regex-pattern {
-      flex: 3;
-    }
-
-    .custom-regex-row .remove-regex {
-      padding: 6px 12px;
-      background-color: #f5f5f5;
-      color: #666;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .custom-regex-row .remove-regex:hover {
-      background-color: #f44336;
-      color: white;
-    }
-
-    /* Button states */
-    #save {
-      transition: background-color 0.3s, transform 0.2s;
-    }
-
-    #save:disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-
-    /* Visual indicator for unsaved changes */
-    .has-changes {
-      animation: pulse 2s infinite;
-      transform: scale(1.03);
-      box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.5);
-    }
-
-    @keyframes pulse {
-      0% {
-        box-shadow: 0 0 0 0 rgba(0, 120, 215, 0.7);
-      }
-
-      70% {
-        box-shadow: 0 0 0 6px rgba(0, 120, 215, 0);
-      }
-
-      100% {
-        box-shadow: 0 0 0 0 rgba(0, 120, 215, 0);
-      }
-    }
-
-    /* Unsaved changes indicator */
-    .unsaved-indicator {
-      display: none;
-      font-size: 14px;
-      color: #d32f2f;
-      font-weight: 500;
-      margin-left: 12px;
-      vertical-align: middle;
-    }
-
-    .header-container {
-      display: flex;
-      align-items: center;
-      margin-bottom: 30px;
-    }
-
-    .logo {
-      width: 64px;
-      height: 64px;
-      margin-right: 20px;
-    }
-
-    .page-title {
-      font-weight: 400;
-      color: #222;
-      font-size: 28px;
-      letter-spacing: -0.5px;
-      margin: 0;
-    }
-  </style>
+  <title>OptimusPII</title>
+  <link rel="stylesheet" href="options.css">
 </head>
 
 <body>
@@ -336,120 +12,208 @@
     <h1 class="page-title">OptimusPII</h1>
   </div>
 
-  <div class="setting-group">
-    <h2>Operation Mode</h2>
+  <div class="tabs-container">
+    <div class="tabs">
+      <div class="tab active" data-tab="policies">Policies</div>
+      <div class="tab" data-tab="domains">Domain Mappings</div>
+      <div class="tab" data-tab="patterns">Pattern Repository</div>
+      <div class="tab" data-tab="settings">Global Settings</div>
+    </div>
 
-    <div class="option">
-      <input type="radio" id="interactive" name="mode" value="interactive">
-      <div class="option-content">
-        <label class="option-title" for="interactive">Interactive</label>
-        <div class="option-description">Show a popup with highlighted sensitive information and ask for confirmation
+    <!-- Policies Tab -->
+    <div class="tab-content active" id="policies-content">
+      <div class="section">
+        <h2>Protection Policies</h2>
+        
+        <div class="policy-list" id="policy-list">
+          <!-- Policy items will be populated here -->
         </div>
+        
+        <div class="policy-editor hidden" id="policy-editor">
+          <div class="policy-editor-header">
+            <h3 class="policy-editor-title">Edit Policy</h3>
+          </div>
+          
+          <div class="form-group">
+            <label for="policy-name">Policy Name</label>
+            <input type="text" id="policy-name" class="form-control" placeholder="Enter policy name">
+          </div>
+          
+          <div class="form-group">
+            <label for="policy-type">Policy Type</label>
+            <select id="policy-type" class="form-control">
+              <option value="pasteProtection">Paste Protection</option>
+              <option value="fileUploadProtection">File Upload Protection</option>
+              <option value="fileDownloadProtection">File Download Protection</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="policy-mode">Operation Mode</label>
+            <select id="policy-mode" class="form-control">
+              <option value="interactive">Interactive - Show confirmation dialog</option>
+              <option value="block-and-alert">Block and Alert - Prevent and notify</option>
+              <option value="alert-only">Alert Only - Allow but warn</option>
+              <option value="silent-block">Silent Block - Prevent without notifying</option>
+              <option value="redact-and-paste">Redact and Paste - Auto-replace sensitive data</option>
+              <option value="disabled">Disabled - No protection</option>
+            </select>
+          </div>
+          
+          <div class="form-group" id="enabled-patterns-container">
+            <label>Enabled Detection Patterns</label>
+            <div class="pattern-list" id="pattern-list">
+              <!-- Patterns will be populated here -->
+            </div>
+          </div>
+          
+          <div class="form-group" id="blocked-extensions-container">
+            <label>Blocked File Extensions</label>
+            <div class="pattern-list" id="extension-list">
+              <!-- Extensions will be populated here -->
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="form-check">
+              <input type="checkbox" id="policy-enabled" class="form-check-input" checked>
+              <label for="policy-enabled">Policy Enabled</label>
+            </div>
+          </div>
+          
+          <div class="action-bar">
+            <div>
+              <button id="cancel-policy-edit" class="button-secondary">Cancel</button>
+            </div>
+            <div>
+              <button id="delete-policy" class="button-danger">Delete Policy</button>
+              <button id="save-policy">Save Policy</button>
+            </div>
+          </div>
+        </div>
+        
+        <button id="create-policy">Create New Policy</button>
       </div>
     </div>
 
-    <div class="option">
-      <input type="radio" id="block-and-alert" name="mode" value="block-and-alert">
-      <div class="option-content">
-        <label class="option-title" for="block-and-alert">Block paste and notify</label>
-        <div class="option-description">Block paste operations with sensitive information and show a notification</div>
+    <!-- Domain Mappings Tab -->
+    <div class="tab-content" id="domains-content">
+      <div class="section">
+        <h2>Domain to Policy Mappings</h2>
+        
+        <div class="domain-mapping-container" id="domain-mapping-container">
+          <!-- Domain mappings will be populated here -->
+        </div>
+        
+        <div id="domain-mapping-editor" class="policy-editor hidden">
+          <div class="form-group">
+            <label for="domain-pattern">Domain Pattern</label>
+            <input type="text" id="domain-pattern" class="form-control" placeholder="e.g., *://chatgpt.com/*">
+            <div class="help-text">Use * for wildcard matching. Examples: *://chatgpt.com/*, https://*.example.com/*</div>
+          </div>
+          
+          <div class="form-group">
+            <label>Applied Policies</label>
+            <div class="pattern-list" id="applied-policies-list">
+              <!-- Available policies checkboxes will be populated here -->
+            </div>
+          </div>
+          
+          <div class="action-bar">
+            <div>
+              <button id="cancel-domain-edit" class="button-secondary">Cancel</button>
+            </div>
+            <div>
+              <button id="delete-domain-mapping" class="button-danger">Delete Mapping</button>
+              <button id="save-domain-mapping">Save Mapping</button>
+            </div>
+          </div>
+        </div>
+        
+        <button id="create-domain-mapping">Add Domain Mapping</button>
       </div>
     </div>
 
-    <div class="option">
-      <input type="radio" id="alert-only" name="mode" value="alert-only">
-      <div class="option-content">
-        <label class="option-title" for="alert-only">Notify only</label>
-        <div class="option-description">Allow paste but show a warning when sensitive information is detected</div>
+    <!-- Pattern Repository Tab -->
+    <div class="tab-content" id="patterns-content">
+      <div class="section">
+        <h2>Built-in Detection Patterns</h2>
+        <div id="default-regex-container">
+          <!-- Default regex patterns will be populated here -->
+        </div>
+
+        <h2>Custom Detection Patterns</h2>
+        <div id="custom-regex-container">
+          <div id="regex-template" class="custom-regex-row hidden">
+            <div class="row">
+              <input type="text" class="regex-name" placeholder="Name (e.g. 'Credit Card')" />
+              <input type="text" class="regex-pattern" placeholder="Regex pattern" />
+            </div>
+            <div class="row">
+              <input type="text" class="regex-sample" placeholder="Sample replacement data" />
+              <button type="button" class="remove-regex">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" id="add-regex">Add Pattern</button>
+        <div class="help-text">Sample data will be used as replacement when choosing to paste redacted values.</div>
       </div>
     </div>
 
-    <div class="option">
-      <input type="radio" id="silent-block" name="mode" value="silent-block">
-      <div class="option-content">
-        <label class="option-title" for="silent-block">Silent block</label>
-        <div class="option-description">Block sensitive pastes without any notification</div>
-      </div>
-    </div>
+    <!-- Global Settings Tab -->
+    <div class="tab-content" id="settings-content">
+      <div class="setting-group">
+        <h2>File Extension Blocking</h2>
+        <div class="help-text">File extensions to be blocked globally when not covered by specific policies</div>
 
-    <div class="option">
-      <input type="radio" id="disabled" name="mode" value="disabled">
-      <div class="option-content">
-        <label class="option-title" for="disabled">Disabled</label>
-        <div class="option-description">Turn off all detection functionality</div>
+        <div id="custom-file-ext-container">
+          <div id="file-ext-template" class="file-ext-row hidden">
+            <input type="text" class="file-ext-pattern" placeholder="Add file extension" />
+            <button type="button" class="remove-ext">X</button>
+          </div>
+        </div>
+
+        <button type="button" id="add-ext">Add Extension</button>
+      </div>
+
+      <div class="section">
+        <h2>Websites to Monitor</h2>
+        <div class="help-text">Use patterns like "https://example.com/*" to match all pages on a domain. 
+          Use "*://*.example.com/*" to match all subdomains and protocols.</div>
+
+        <div id="custom-url-container">
+          <div id="url-template" class="custom-url-row hidden">
+            <input type="text" class="url-pattern" placeholder="URL pattern (e.g., 'https://example.com/*')" />
+            <button type="button" class="remove-url">X</button>
+          </div>
+        </div>
+
+        <button type="button" id="add-url">Add Website</button>
       </div>
     </div>
   </div>
 
-  <div class="section">
-    <h2>File Extension to be blocked</h2>
-    <div class="help-text">Use file extensions that you want to be blocked</div>
-
-    <div id="custom-file-ext-container">
-      <div id="file-ext-template" class="file-ext-row hidden">
-        <input type="text" class="file-ext-pattern" placeholder="Add file extension" />
-        <button type="button" class="remove-ext">X</button>
-      </div>
-    </div>
-
-    <button type="button" id="add-ext">Add Extension</button>
-  </div>
-
-  <div class="section">
-    <h2>Websites to Monitor</h2>
-    <div class="help-text">Use patterns like "https://example.com/*" to match all pages on a domain. Use
-      "*://*.example.com/*" to match all subdomains.</div>
-
-    <div id="custom-url-container">
-      <div id="url-template" class="custom-url-row hidden">
-        <input type="text" class="url-pattern" placeholder="URL pattern (e.g., 'https://example.com/*')" />
-        <button type="button" class="remove-url">X</button>
-      </div>
-    </div>
-
-    <button type="button" id="add-url">Add Website</button>
-  </div>
-
-  <div class="section">
-    <h2>Built-in Detection Patterns</h2>
-    <div id="default-regex-container">
-      <!-- Default regex patterns will be populated here -->
-    </div>
-
-    <h2>Custom Detection Patterns</h2>
-
-    <div id="custom-regex-container">
-      <!-- Example custom regex -->
-      <div class="custom-regex-row">
-        <div class="row">
-          EXAMPLE
-          <input type="text" class="regex-name" value="API KEY" />
-          <input type="text" class="regex-pattern" value="/[A-Z0-9]{32}/" />
-        </div>
-        <div class="row">
-          <input type="text" class="regex-sample" value="A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P7" />
-        </div>
-      </div>
-      <!-- Existing code -->
-      <div id="regex-template" class="custom-regex-row hidden">
-        <div class="row">
-          <input type="text" class="regex-name" placeholder="Name (e.g. 'Credit Card')" />
-          <input type="text" class="regex-pattern" placeholder="Regex pattern" />
-        </div>
-        <div class="row">
-          <input type="text" class="regex-sample" placeholder="Sample replacement data" />
-          <button type="button" class="remove-regex">Remove</button>
-        </div>
-      </div>
-    </div>
-
-    <button type="button" id="add-regex">Add Pattern</button>
-    <div class="help-text">Sample data will be used as replacement when choosing to paste redacted values.</div>
-  </div>
-
-  <button id="save" disabled>Apply Settings <span class="unsaved-indicator">Unsaved changes</span></button>
-
+  <!-- Save button for entire config -->
+  <button id="save" disabled>Apply All Settings <span class="unsaved-indicator">Unsaved changes</span></button>
   <div id="status" class="status">Settings saved</div>
+
+  <!-- Modals -->
+  <div id="confirm-delete-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Confirm Delete</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this item? This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button id="cancel-delete" class="button-secondary">Cancel</button>
+        <button id="confirm-delete" class="button-danger">Delete</button>
+      </div>
+    </div>
+  </div>
 
   <script src="../background.js"></script>
   <script src="options.js"></script>

@@ -73,6 +73,48 @@ class OptimusPIIBackground {
       "https://chatgpt.com/*",
       "https://claude.ai/*"
     ];
+
+    // Define default policies
+    this.DEFAULT_POLICIES = {
+      "default-paste-policy": {
+        policyId: "default-paste-policy",
+        policyName: "Default Paste Protection",
+        policyType: "pasteProtection",
+        enabled: true,
+        policyConfig: {
+          mode: "interactive",
+          enabledPatterns: Object.keys(this.DEFAULT_REGEX_PATTERNS)
+        }
+      },
+      "default-file-upload-policy": {
+        policyId: "default-file-upload-policy",
+        policyName: "Default File Upload Protection",
+        policyType: "fileUploadProtection",
+        enabled: true,
+        policyConfig: {
+          mode: "interactive",
+          blockedExtensions: [...this.DEFAULT_FILE_TYPES]
+        }
+      }
+    };
+    
+    // Define default domain mappings
+    this.DEFAULT_DOMAIN_MAPPINGS = [
+      {
+        domainPattern: "*://chatgpt.com/*",
+        appliedPolicies: ["default-paste-policy", "default-file-upload-policy"]
+      },
+      {
+        domainPattern: "*://claude.ai/*",
+        appliedPolicies: ["default-paste-policy", "default-file-upload-policy"]
+      },
+      {
+        domainPattern: "*://chat.mistral.ai/*",
+        appliedPolicies: ["default-paste-policy", "default-file-upload-policy"]
+      }
+    ];
+    
+    this.initializePolicies();
   }
 
   /**
@@ -331,6 +373,31 @@ class OptimusPIIBackground {
       window.OptimusPII.DEFAULT_FILE_TYPES = this.DEFAULT_FILE_TYPES;
       window.OptimusPII.registerContentScriptsForUrls = this.registerContentScriptsForUrls.bind(this);
     }
+  }
+
+  // Initialize policies and domain mappings if they don't exist
+  initializePolicies() {
+    chrome.storage.local.get(['policies', 'domainMappings'], (result) => {
+      // Only set default values if they don't already exist
+      const updates = {};
+      
+      console.log(result);
+
+      if (!result.policies) {
+        updates.policies = this.DEFAULT_POLICIES;
+      }
+      
+      if (!result.domainMappings) {
+        updates.domainMappings = this.DEFAULT_DOMAIN_MAPPINGS;
+      }
+
+      console.log(updates);
+      
+      if (Object.keys(updates).length > 0) {
+        chrome.storage.local.set(updates);
+      }
+
+    });
   }
 }
 

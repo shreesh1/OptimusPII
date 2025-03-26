@@ -49,6 +49,19 @@ export class OptimusPIIContentController {
 
     // DOM Observer
     this.observer = null;
+
+    // Store applicable policies for current domain
+    this.activePolicies = {
+      pasteProtection: null,
+      fileUploadProtection: null,
+      fileDownloadProtection: null
+    };
+    
+    // Load configuration for current domain
+    this.loadConfiguration();
+    
+    // Listen for storage changes
+    chrome.storage.onChanged.addListener(this.handleStorageChanges.bind(this));
   }
   
   /**
@@ -64,46 +77,47 @@ export class OptimusPIIContentController {
    * Load configuration from storage
    */
   loadConfiguration() {
-    this.api.storage.local.get(['mode', 'regexPatterns', 'customUrls', 'blockFileTypes'])
-      .then(result => {
-        if (result.mode) {
-          this.config.mode = result.mode;
-        }
-
-        // Load regex patterns
-        if (result.regexPatterns) {
-          this.config.regexPatterns = result.regexPatterns;
-        }
-
-        // Load blocked file types
-        if (result.blockFileTypes) {
-          this.config.blockFileTypes = result.blockFileTypes;
-        }
-
-        // Check URL monitoring status
-        this.checkIfShouldMonitor();
-      })
-      .catch(error => {
-        console.error('Failed to load configuration:', error);
+    const currentUrl = window.location.href;
+    
+    chrome.storage.local.get(['policies', 'domainMappings', 'regexPatterns'], (result) => {
+      
+      console.log('Loaded configuration:', result);
+      
+      // Reset active policies
+      this.activePolicies = {
+        pasteProtection: null,
+        fileUploadProtection: null,
+        fileDownloadProtection: null
+      };
+      
+      // Find applicable domain mappings
+      const mappings = result.domainMappings || [];
+      const applicableMappings = mappings.filter(mapping => {
+        return this.urlMatchesPattern(currentUrl, mapping.domainPattern);
       });
 
-    // Listen for changes to configuration
-    this.api.storage.onChanged.addListener((changes, area) => {
-      if (area === 'local') {
-        if (changes.mode) {
-          this.config.mode = changes.mode.newValue;
+      console.log(applicableMappings);
+      
+      // Get all policy IDs that apply to this domain
+      const policyIds = applicableMappings.reduce((ids, mapping) => {
+        return [...ids, ...mapping.appliedPolicies];
+      }, []);
+      
+      // Load the policies
+      const policies = result.policies || {};
+      
+      // Assign active policies by type
+      policyIds.forEach(id => {
+        const policy = policies[id];
+        if (policy && policy.enabled) {
+          this.activePolicies[policy.policyType] = policy;
         }
-        if (changes.regexPatterns) {
-          this.config.regexPatterns = changes.regexPatterns.newValue;
-        }
-        if (changes.customUrls) {
-          // URL list changed, check if we should still monitor this page
-          this.checkIfShouldMonitor();
-        }
-        if (changes.blockFileTypes) {
-          this.config.blockFileTypes = changes.blockFileTypes.newValue;
-        }
-      }
+      });
+      
+      // Store regex patterns for use in detection
+      this.regexPatterns = result.regexPatterns || {};
+      
+      console.log('Loaded policies for domain:', this.activePolicies);
     });
   }
   
@@ -163,5 +177,34 @@ export class OptimusPIIContentController {
    */
   monitorDOMChanges() {
     setupDOMObserver(this);
+  }
+
+  // Update policies when storage changes
+  handleStorageChanges(changes, areaName) {
+    if (areaName !== 'local') return;
+    
+    const needsReload = changes.policies || changes.domainMappings || changes.regexPatterns;
+    
+    if (needsReload) {
+      console.log('Configuration changed, reloading policies...');
+      this.loadConfiguration();
+    }
+  }
+  
+  // Helper method to check if a URL matches a pattern
+  urlMatchesPattern(url, pattern) {
+    console.log(url, pattern);
+    try {
+      // Convert the domain pattern to a regex
+      const escapedPattern = pattern
+        .replace(/[.+?^${}()|[\]\\]/g, '\\$&') // Escape regex special chars except * and ?
+        .replace(/\*/g, '.*'); // Convert * to .*
+        
+      const regex = new RegExp('^' + escapedPattern + '$');
+      return regex.test(url);
+    } catch (e) {
+      console.error('Invalid pattern:', pattern, e);
+      return false;
+    }
   }
 }

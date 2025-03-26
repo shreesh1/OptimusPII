@@ -1,14 +1,24 @@
 # OptimusPII
 
 <p align="center">
-  <img src="icon/icon.png" alt="OptimusPII Logo" width="150" />
+  <img src="icon.png" alt="OptimusPII Logo" width="150" />
 </p>
 
-Extension to block pasting PII (Personally Identifiable Information) in ChatGPT, Claude, and other web applications.
+A comprehensive browser extension that detects, blocks, and redacts Personally Identifiable Information (PII) before it's shared with web applications like ChatGPT, Claude, and others.
+
+## Project Architecture
+
+OptimusPII is designed as a modular system with several components:
+
+- **optimuspii-extension**: The main browser extension that runs in Chrome/Firefox
+- **optimuspii-messagingbin**: Messaging infrastructure for secure communications
+- **optimuspii-server**: Backend service for advanced detection capabilities 
+- **optimuspii-service**: Supporting services for enhanced functionality
 
 ## Features
 
 - **Real-time Detection**: Automatically scans clipboard content when pasting to detect PII
+- **File Upload Protection**: Prevents uploading sensitive file types containing potential PII
 - Detects and blocks email addresses in pasted content
 - Detects and blocks credit card numbers in pasted content
 - Detects and blocks phone numbers in various international formats
@@ -55,7 +65,15 @@ Alert Mode
 
 ## How it works
 
-The extension monitors paste events on web pages and checks for patterns that match known PII formats. When detected, it can block the paste operation and/or notify the user based on the selected operational mode.
+The extension monitors paste events and file uploads on web pages and checks for patterns that match known PII formats. When detected, it can block the operation and/or notify the user based on the selected operational mode.
+
+## Technical Implementation
+
+- **Content Scripts**: Monitor and intercept paste events and file uploads
+- **Background Service**: Manages configuration and cross-page coordination
+- **UI Components**: Provide interactive detection and configuration interfaces
+- **Detection Services**: Apply regular expression patterns to identify PII
+- **File Scanner**: Detects potentially sensitive file types
 
 ## PII Detection Types
 
@@ -71,18 +89,37 @@ The extension monitors paste events on web pages and checks for patterns that ma
 
 ## Developer Installation
 
-### Chrome/
-1. Download the source code
-2. Go to `chrome://extensions/` (Chrome)
-3. Enable "Developer mode"
-4. Click "Load unpacked"
-5. Select the extension folder ( If issues rename manifest_chrome.json to manifest.json )
+### Chrome/Edge/Brave (Chromium)
+1. Clone the repository
+2. Run `npm install` in the optimuspii-extension directory
+3. Run `npm run build:chromium` to create a production build
+4. Go to `chrome://extensions/`
+5. Enable "Developer mode"
+6. Click "Load unpacked" and select the `optimuspii-extension/build/chromium` directory
 
 ### Firefox
-1. Download the source code
-2. Go to `about:debugging#/runtime/this-firefox`
-3. Click "Load Temporary Add-on"
-4. Select the manifest_firefox.json file ( If issues rename manifest_firefox.json to manifest.json )
+1. Clone the repository
+2. Run `npm install` in the optimuspii-extension directory
+3. Run `npm run build:firefox` to create a production build
+4. Go to `about:debugging#/runtime/this-firefox`
+5. Click "Load Temporary Add-on"
+6. Select the `manifest.json` file in the `optimuspii-extension/build/firefox` directory
+
+## Development
+
+### Local Development
+```sh
+# Install dependencies
+npm install
+
+# Start development build with auto-reload (choose your target browser)
+npm run dev:chrome
+# or
+npm run dev:firefox
+
+# Build production versions
+npm run build
+```
 
 ## Supported Websites
 
@@ -116,3 +153,7 @@ Access the extension options to customize how OptimusPII works:
    - Provide a regex pattern to match the sensitive information
    - Set sample replacement text for when using "Paste Redacted" option
    - Enable/disable patterns as needed
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.

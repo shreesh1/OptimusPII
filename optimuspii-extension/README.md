@@ -1,7 +1,7 @@
 # OptimusPII
 
 <p align="center">
-  <img src="icon/icon.png" alt="OptimusPII Logo" width="150" />
+  <img src="assets/icons/icon.png" alt="OptimusPII Logo" width="150" />
 </p>
 
 Extension to block pasting PII (Personally Identifiable Information) in ChatGPT, Claude, and other web applications.

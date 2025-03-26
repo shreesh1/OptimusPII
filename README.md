@@ -41,9 +41,14 @@ OptimusPII is designed as a modular system with several components:
 
 ## Screenshots
 
-1. Interactive Module for Blocking or Allowing
+1. Interactive Module for Blocking or Allowing Pasting
 
 ![image](https://github.com/user-attachments/assets/9da20097-a21c-44dc-b913-1d1f238ca1aa)
+
+2. Interactive Module for Blocking or Allowing File Upload
+
+![image](https://github.com/user-attachments/assets/49fc7954-98d3-41cb-b161-db37606f7d6a)
+
 
 2. Notifications for other modes if paste is directly blocked or detected in alert mode
 
@@ -58,6 +63,8 @@ Alert Mode
 3. Configuration changes from the options mode for blocking or interactive mode
 
 ![image](https://github.com/user-attachments/assets/31507e7c-449c-4871-bd29-0fdfe39419bb)
+
+![image](https://github.com/user-attachments/assets/6618fc0a-2a16-4446-b21f-dd0cffa9e906)
 
 ![image](https://github.com/user-attachments/assets/370c8cd9-5d9d-4a90-8d30-272fe5bb14d9)
 

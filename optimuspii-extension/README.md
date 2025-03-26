@@ -1,24 +1,14 @@
 # OptimusPII
 
 <p align="center">
-  <img src="icon.png" alt="OptimusPII Logo" width="150" />
+  <img src="assets/icons/icon.png" alt="OptimusPII Logo" width="150" />
 </p>
 
-A comprehensive browser extension that detects, blocks, and redacts Personally Identifiable Information (PII) before it's shared with web applications like ChatGPT, Claude, and others.
-
-## Project Architecture
-
-OptimusPII is designed as a modular system with several components:
-
-- **optimuspii-extension**: The main browser extension that runs in Chrome/Firefox
-- **optimuspii-messagingbin**: Messaging infrastructure for secure communications
-- **optimuspii-server**: Backend service for advanced detection capabilities 
-- **optimuspii-service**: Supporting services for enhanced functionality
+Extension to block pasting PII (Personally Identifiable Information) in ChatGPT, Claude, and other web applications.
 
 ## Features
 
 - **Real-time Detection**: Automatically scans clipboard content when pasting to detect PII
-- **File Upload Protection**: Prevents uploading sensitive file types containing potential PII
 - Detects and blocks email addresses in pasted content
 - Detects and blocks credit card numbers in pasted content
 - Detects and blocks phone numbers in various international formats
@@ -41,14 +31,9 @@ OptimusPII is designed as a modular system with several components:
 
 ## Screenshots
 
-1. Interactive Module for Blocking or Allowing Pasting
+1. Interactive Module for Blocking or Allowing
 
 ![image](https://github.com/user-attachments/assets/9da20097-a21c-44dc-b913-1d1f238ca1aa)
-
-2. Interactive Module for Blocking or Allowing File Upload
-
-![image](https://github.com/user-attachments/assets/49fc7954-98d3-41cb-b161-db37606f7d6a)
-
 
 2. Notifications for other modes if paste is directly blocked or detected in alert mode
 
@@ -64,23 +49,13 @@ Alert Mode
 
 ![image](https://github.com/user-attachments/assets/31507e7c-449c-4871-bd29-0fdfe39419bb)
 
-![image](https://github.com/user-attachments/assets/6618fc0a-2a16-4446-b21f-dd0cffa9e906)
-
 ![image](https://github.com/user-attachments/assets/370c8cd9-5d9d-4a90-8d30-272fe5bb14d9)
 
 ![image](https://github.com/user-attachments/assets/f6300c2a-946f-4e91-b874-1f6fe88ba0b0)
 
 ## How it works
 
-The extension monitors paste events and file uploads on web pages and checks for patterns that match known PII formats. When detected, it can block the operation and/or notify the user based on the selected operational mode.
-
-## Technical Implementation
-
-- **Content Scripts**: Monitor and intercept paste events and file uploads
-- **Background Service**: Manages configuration and cross-page coordination
-- **UI Components**: Provide interactive detection and configuration interfaces
-- **Detection Services**: Apply regular expression patterns to identify PII
-- **File Scanner**: Detects potentially sensitive file types
+The extension monitors paste events on web pages and checks for patterns that match known PII formats. When detected, it can block the paste operation and/or notify the user based on the selected operational mode.
 
 ## PII Detection Types
 
@@ -96,37 +71,18 @@ The extension monitors paste events and file uploads on web pages and checks for
 
 ## Developer Installation
 
-### Chrome/Edge/Brave (Chromium)
-1. Clone the repository
-2. Run `npm install` in the optimuspii-extension directory
-3. Run `npm run build:chromium` to create a production build
-4. Go to `chrome://extensions/`
-5. Enable "Developer mode"
-6. Click "Load unpacked" and select the `optimuspii-extension/build/chromium` directory
+### Chrome/
+1. Download the source code
+2. Go to `chrome://extensions/` (Chrome)
+3. Enable "Developer mode"
+4. Click "Load unpacked"
+5. Select the extension folder ( If issues rename manifest_chrome.json to manifest.json )
 
 ### Firefox
-1. Clone the repository
-2. Run `npm install` in the optimuspii-extension directory
-3. Run `npm run build:firefox` to create a production build
-4. Go to `about:debugging#/runtime/this-firefox`
-5. Click "Load Temporary Add-on"
-6. Select the `manifest.json` file in the `optimuspii-extension/build/firefox` directory
-
-## Development
-
-### Local Development
-```sh
-# Install dependencies
-npm install
-
-# Start development build with auto-reload (choose your target browser)
-npm run dev:chrome
-# or
-npm run dev:firefox
-
-# Build production versions
-npm run build
-```
+1. Download the source code
+2. Go to `about:debugging#/runtime/this-firefox`
+3. Click "Load Temporary Add-on"
+4. Select the manifest_firefox.json file ( If issues rename manifest_firefox.json to manifest.json )
 
 ## Supported Websites
 
@@ -160,7 +116,3 @@ Access the extension options to customize how OptimusPII works:
    - Provide a regex pattern to match the sensitive information
    - Set sample replacement text for when using "Paste Redacted" option
    - Enable/disable patterns as needed
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.

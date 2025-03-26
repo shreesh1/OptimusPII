@@ -375,6 +375,9 @@ export function showBlockedFilePopup(fileInput, blockedFiles, originalFiles, con
   // Create action buttons
   const buttonContainer = createBlockedFileButtons(popup, fileInput, originalFiles, controller);
 
+  // Clear the file input to block the upload initially
+  fileInput.value = '';
+  
   // Assemble popup
   popup.appendChild(header);
   popup.appendChild(content);
@@ -384,8 +387,6 @@ export function showBlockedFilePopup(fileInput, blockedFiles, originalFiles, con
   document.body.appendChild(popup);
   animatePopup(popup);
 
-  // Clear the file input to block the upload initially
-  fileInput.value = '';
 }
 
 /**
@@ -541,23 +542,27 @@ function createBlockedFileButtons(popup, fileInput, originalFiles, controller) {
   allowButton.addEventListener('mouseleave', () => {
     allowButton.style.opacity = '1';
   });
-  allowButton.addEventListener('click', () => {
-    popup.remove();
-    showNotification('File upload allowed');
-
-    // Temporarily mark this file input as allowed
-    controller.allowedFileUploads.set(fileInput, true);
-
+  allowButton.addEventListener('click', () => {    
     // Create a new DataTransfer object to reconstruct the FileList
     const dataTransfer = new DataTransfer();
     originalFiles.forEach(file => dataTransfer.items.add(file));
-
+    
+    // Remove the popup before setting files to prevent potential re-triggering
+    popup.remove();
+    
     // Set the files back to the input
     fileInput.files = dataTransfer.files;
-
-    // Trigger native change events (without our listener)
-    const changeEvent = new Event('change', { bubbles: true });
-    fileInput.dispatchEvent(changeEvent);
+    
+    // Show notification
+    showNotification('File upload allowed');
+    
+    // Use a timeout to ensure our event handling completes first
+    setTimeout(() => {
+      // Trigger change event with a flag to bypass our handler
+      const changeEvent = new Event('change', { bubbles: true });
+      changeEvent._piiAllowOverride = true; // Custom flag
+      fileInput.dispatchEvent(changeEvent);
+    }, 0);
   });
 
   buttonContainer.appendChild(blockButton);

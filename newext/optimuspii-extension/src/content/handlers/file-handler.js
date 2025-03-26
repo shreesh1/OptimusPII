@@ -29,9 +29,17 @@ export function addFileInputListeners(element, controller) {
  * @param {Event} event - File input change event
  */
 function handleFileUploadWrapper(event) {
-  const controller = event.target._piiController;
-  if (controller) {
-    return handleFileUpload(event, controller);
+  // Skip processing if this is our programmatically triggered event with override flag
+  if (event._piiAllowOverride) {
+    return true;
+  }
+  
+  if (event.currentTarget.value.length > 0) {
+    const controller = event.currentTarget._piiController;
+    if (controller) {
+      return handleFileUpload(event, controller);
+    }
+    return true;
   }
 }
 
@@ -45,13 +53,7 @@ export function handleFileUpload(event, controller) {
   // Skip processing if monitoring is disabled
   if (controller.config.mode === "disabled" || !controller.isMonitoringEnabled) return true;
 
-  const fileInput = event.target;
-
-  // Check if this upload was already explicitly allowed
-  if (controller.allowedFileUploads.has(fileInput)) {
-    controller.allowedFileUploads.delete(fileInput);
-    return true;
-  }
+  const fileInput = event.currentTarget;
 
   if (fileInput.files && fileInput.files.length > 0) {
     const blockedFiles = checkForBlockedFileTypes(fileInput.files, controller.config.blockFileTypes);

@@ -125,28 +125,28 @@ export class OptimusPIIContentController {
    * Check if the current URL should be monitored
    */
   checkIfShouldMonitor() {
-    this.api.storage.local.get('customUrls')
+    // Get domain mappings instead of customUrls
+    this.api.storage.local.get('domainMappings')
     .then(result => {
-      const customUrls = result.customUrls || [];
+      const domainMappings = result.domainMappings || [];
       const currentUrl = window.location.href;
 
-      // If there are no custom URLs, assume we should keep monitoring
-      if (!customUrls || customUrls.length === 0) {
-        this.isMonitoringEnabled = true;
+      // If there are no domain mappings, assume we should not monitor
+      if (!domainMappings || domainMappings.length === 0) {
+        this.isMonitoringEnabled = false;
         return;
       }
 
-      // Check if any pattern in customUrls matches the current URL
-      this.isMonitoringEnabled = customUrls.some(urlPattern => {
-        // Convert URL pattern to regex (handling wildcards)
-        const pattern = urlPattern.replace(/\./g, '\\.').replace(/\*/g, '.*');
-        const regex = new RegExp('^' + pattern + '$');
-        return regex.test(currentUrl);
+      // Check if any domain mapping pattern matches the current URL
+      this.isMonitoringEnabled = domainMappings.some(mapping => {
+        return this.urlMatchesPattern(currentUrl, mapping.domainPattern);
       });
+      
+      console.log(`Monitoring ${currentUrl}: ${this.isMonitoringEnabled}`);
     })
     .catch(error => {
       console.error('Error checking URL monitoring status:', error);
-      this.isMonitoringEnabled = true; // Default to enabled on error
+      this.isMonitoringEnabled = false; // Default to disabled on error
     });
   }
   

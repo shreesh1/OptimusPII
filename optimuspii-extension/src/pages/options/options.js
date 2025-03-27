@@ -37,6 +37,9 @@ class PolicyManager {
       'fileUploadProtection': 'File Upload Protection',
       'fileDownloadProtection': 'File Download Protection'
     };
+    // Default file extensions to block for file policies
+    const defaultBlockedExtensions = policyType.includes('file') ?
+      ['exe', 'dll', 'bat', 'cmd', 'msi', 'ps1', 'sh'] : [];
 
     const newPolicy = {
       policyId: policyId,
@@ -46,7 +49,7 @@ class PolicyManager {
       policyConfig: {
         mode: 'interactive',
         enabledPatterns: [],
-        blockedExtensions: []
+        blockedExtensions: defaultBlockedExtensions
       }
     };
 
@@ -79,13 +82,13 @@ class PolicyManager {
       if (policies[policyId]) {
         delete policies[policyId];
       }
-      
+
       // Remove policy from domain mappings
       const updatedDomainMappings = domainMappings.map(mapping => {
         mapping.appliedPolicies = mapping.appliedPolicies.filter(id => id !== policyId);
         return mapping;
       });
-      
+
       return chrome.storage.local.set({
         policies,
         domainMappings: updatedDomainMappings
@@ -101,13 +104,13 @@ class PolicyManager {
   static saveDomainMapping(mapping) {
     return this.getAllDomainMappings().then(mappings => {
       const existingIndex = mappings.findIndex(m => m.domainPattern === mapping.domainPattern);
-      
+
       if (existingIndex >= 0) {
         mappings[existingIndex] = mapping;
       } else {
         mappings.push(mapping);
       }
-      
+
       return chrome.storage.local.set({ domainMappings: mappings });
     });
   }
@@ -135,14 +138,14 @@ class OptionsManager {
     this.allPolicies = {};
     this.allDomainMappings = [];
     this.patternRepository = {};
-    
+
     this.domElements = {
       saveButton: document.getElementById('save'),
       statusIndicator: document.getElementById('status'),
       unsavedIndicator: document.querySelector('.unsaved-indicator'),
       tabs: document.querySelectorAll('.tab'),
       tabContents: document.querySelectorAll('.tab-content'),
-      
+
       // Policy management
       policyList: document.getElementById('policy-list'),
       policyEditor: document.getElementById('policy-editor'),
@@ -156,7 +159,7 @@ class OptionsManager {
       cancelPolicyEdit: document.getElementById('cancel-policy-edit'),
       patternList: document.getElementById('pattern-list'),
       extensionList: document.getElementById('extension-list'),
-      
+
       // Domain management
       domainMappingContainer: document.getElementById('domain-mapping-container'),
       domainMappingEditor: document.getElementById('domain-mapping-editor'),
@@ -167,24 +170,18 @@ class OptionsManager {
       deleteDomainMapping: document.getElementById('delete-domain-mapping'),
       cancelDomainEdit: document.getElementById('cancel-domain-edit')
     };
-    
+
     this.containers = {
       defaultRegex: document.getElementById('default-regex-container'),
       customRegex: document.getElementById('custom-regex-container'),
-      customUrl: document.getElementById('custom-url-container'),
-      fileExt: document.getElementById('custom-file-ext-container')
     };
-    
+
     this.templates = {
       regexTemplate: document.getElementById('regex-template'),
-      urlTemplate: document.getElementById('url-template'),
-      fileExtTemplate: document.getElementById('file-ext-template')
     };
-    
+
     this.addButtons = {
       addRegex: document.getElementById('add-regex'),
-      addUrl: document.getElementById('add-url'),
-      addExt: document.getElementById('add-ext')
     };
 
     // Confirmation modal elements
@@ -213,17 +210,15 @@ class OptionsManager {
     Promise.all([
       PolicyManager.getAllPolicies(),
       PolicyManager.getAllDomainMappings(),
-      this.api.storage.local.get(['regexPatterns', 'blockFileTypes'])
+      this.api.storage.local.get(['regexPatterns'])
     ]).then(([policies, domainMappings, result]) => {
       this.allPolicies = policies || {};
       this.allDomainMappings = domainMappings || [];
       this.patternRepository = result.regexPatterns || {};
-      this.blockFileTypes = result.blockFileTypes || [];
-      
+
       this.renderPolicyList();
       this.renderDomainMappings();
       this.loadPatternRepository();
-      this.loadGlobalSettings();
     }).catch(error => {
       console.error('Failed to load data:', error);
       this.showErrorMessage('Failed to load saved options');
@@ -238,13 +233,13 @@ class OptionsManager {
       tab.addEventListener('click', () => {
         // Remove active class from all tabs
         this.domElements.tabs.forEach(t => t.classList.remove('active'));
-        
+
         // Add active class to clicked tab
         tab.classList.add('active');
-        
+
         // Hide all tab contents
         this.domElements.tabContents.forEach(content => content.classList.remove('active'));
-        
+
         // Show content for active tab
         const tabId = tab.getAttribute('data-tab');
         document.getElementById(`${tabId}-content`).classList.add('active');
@@ -258,7 +253,23 @@ class OptionsManager {
   attachEventListeners() {
     // Global save button
     this.domElements.saveButton.addEventListener('click', this.saveAllChanges.bind(this));
-    
+
+    // For example, if you had something like:
+    this.api.storage.onChanged.addListener((changes, area) => {
+      if (area === 'local' && changes.domainMappings) {
+        console.log('Domain mappings changed, updating content scripts');
+        console.log(changes.domainMappings.newValue);
+        if (changes.domainMappings.newValue.length > 0) {
+          var contentUrls = [];
+          for (const i in changes.domainMappings.newValue) {
+            contentUrls.push(changes.domainMappings.newValue[i]['domainPattern']);
+          }
+          console.log(contentUrls);
+        this.OptimusPII.registerContentScriptsForUrls(contentUrls);
+        }
+      }
+    });
+
     // Pattern repository buttons
     if (this.addButtons.addRegex) {
       this.addButtons.addRegex.addEventListener('click', () => {
@@ -266,59 +277,45 @@ class OptionsManager {
         this.markAsChanged();
       });
     }
-    
-    if (this.addButtons.addUrl) {
-      this.addButtons.addUrl.addEventListener('click', () => {
-        this.addCustomUrlRow();
-        this.markAsChanged();
-      });
-    }
-    
-    if (this.addButtons.addExt) {
-      this.addButtons.addExt.addEventListener('click', () => {
-        this.addCustomExtensionRow();
-        this.markAsChanged();
-      });
-    }
-    
+
     // Policy management
     this.domElements.createPolicyButton.addEventListener('click', () => {
-      this.showPolicyTypeSelector();
+      this.showPolicyTypeS2elector();
     });
-    
+
     this.domElements.savePolicy.addEventListener('click', () => {
       this.saveCurrentPolicy();
     });
-    
+
     this.domElements.deletePolicy.addEventListener('click', () => {
       this.confirmDelete(() => this.deleteCurrentPolicy());
     });
-    
+
     this.domElements.cancelPolicyEdit.addEventListener('click', () => {
       this.hidePolicyEditor();
     });
-    
+
     this.domElements.policyType.addEventListener('change', () => {
       this.updatePolicyEditorFields();
     });
-    
+
     // Domain mapping
     this.domElements.createDomainMapping.addEventListener('click', () => {
       this.showDomainMappingEditor();
     });
-    
+
     this.domElements.saveDomainMapping.addEventListener('click', () => {
       this.saveCurrentDomainMapping();
     });
-    
+
     this.domElements.deleteDomainMapping.addEventListener('click', () => {
       this.confirmDelete(() => this.deleteCurrentDomainMapping());
     });
-    
+
     this.domElements.cancelDomainEdit.addEventListener('click', () => {
       this.hideDomainMappingEditor();
     });
-    
+
     // Modal
     this.confirmDeleteButton.addEventListener('click', () => {
       if (this.pendingDeleteAction) {
@@ -327,11 +324,11 @@ class OptionsManager {
       }
       this.hideConfirmModal();
     });
-    
+
     this.cancelDeleteButton.addEventListener('click', () => {
       this.hideConfirmModal();
     });
-    
+
     this.modalCloseButton.addEventListener('click', () => {
       this.hideConfirmModal();
     });
@@ -345,12 +342,12 @@ class OptionsManager {
     document.querySelectorAll('#policy-editor input, #policy-editor select').forEach(input => {
       input.addEventListener('change', this.markAsChanged.bind(this));
     });
-    
+
     // Form inputs in domain mapping editor
     document.querySelectorAll('#domain-mapping-editor input').forEach(input => {
       input.addEventListener('change', this.markAsChanged.bind(this));
     });
-    
+
     // Radio buttons
     document.querySelectorAll('input[type="radio"]').forEach(radio => {
       radio.addEventListener('change', this.markAsChanged.bind(this));
@@ -373,7 +370,7 @@ class OptionsManager {
                 input.addEventListener('input', this.markAsChanged.bind(this));
                 input.addEventListener('change', this.markAsChanged.bind(this));
               });
-              node.querySelectorAll('button.remove-regex, button.remove-url, button.remove-ext')
+              node.querySelectorAll('button.remove-regex')
                 .forEach(btn => {
                   btn.addEventListener('click', this.markAsChanged.bind(this));
                 });
@@ -392,7 +389,7 @@ class OptionsManager {
       this.domElements.extensionList,
       this.domElements.appliedPoliciesList
     ].filter(Boolean);
-    
+
     containers.forEach(container => {
       if (container) {
         observer.observe(container, { childList: true, subtree: true });
@@ -454,15 +451,12 @@ class OptionsManager {
    */
   saveAllChanges(e) {
     if (e) e.preventDefault();
-    
+
     // First save pattern repository and global settings
     const patternRepository = this.collectPatternRepository();
-    const globalSettings = this.collectGlobalSettings();
-    
+
     this.api.storage.local.set({
       regexPatterns: patternRepository,
-      blockFileTypes: globalSettings.blockFileTypes,
-      customUrls: globalSettings.customUrls
     }).then(() => {
       this.showSaveConfirmation();
       this.resetChangeState();
@@ -482,18 +476,18 @@ class OptionsManager {
       { id: 'fileUploadProtection', name: 'File Upload Protection' },
       { id: 'fileDownloadProtection', name: 'File Download Protection' }
     ];
-    
+
     const policyType = prompt(
       'Select policy type:\n1. Paste Protection\n2. File Upload Protection\n3. File Download Protection',
       '1'
     );
-    
+
     let selectedType;
     if (policyType === '1') selectedType = 'pasteProtection';
     else if (policyType === '2') selectedType = 'fileUploadProtection';
     else if (policyType === '3') selectedType = 'fileDownloadProtection';
     else return;
-    
+
     this.createNewPolicy(selectedType);
   }
 
@@ -516,14 +510,14 @@ class OptionsManager {
    */
   showPolicyEditor(policy) {
     this.currentEditingPolicy = policy;
-    
+
     this.domElements.policyName.value = policy.policyName;
     this.domElements.policyType.value = policy.policyType;
     this.domElements.policyMode.value = policy.policyConfig.mode || 'interactive';
     this.domElements.policyEnabled.checked = policy.enabled;
-    
+
     this.updatePolicyEditorFields();
-    
+
     this.domElements.policyEditor.classList.remove('hidden');
   }
 
@@ -531,107 +525,107 @@ class OptionsManager {
    * Update policy editor fields based on policy type
    */
   updatePolicyEditorFields() {
-    if (!this.currentEditingPolicy) return;
-    
     const policyType = this.domElements.policyType.value;
-    const policyConfig = this.currentEditingPolicy.policyConfig || {};
     
-    // Show/hide relevant containers
-    const patternContainer = document.getElementById('enabled-patterns-container');
-    const extensionContainer = document.getElementById('blocked-extensions-container');
+    // Show/hide extension list based on policy type
+    if (policyType === 'fileUploadProtection' || policyType === 'fileDownloadProtection') {
+      this.domElements.extensionList.parentElement.classList.remove('hidden');
+    } else {
+      this.domElements.extensionList.parentElement.classList.add('hidden');
+    }
     
-    patternContainer.style.display = (policyType === 'pasteProtection') ? 'block' : 'none';
-    extensionContainer.style.display = (policyType === 'fileUploadProtection') ? 'block' : 'none';
-    
-    // Clear current fields
-    this.domElements.patternList.innerHTML = '';
+    // Populate extension list if needed
+    if (this.currentEditingPolicy && 
+        (policyType === 'fileUploadProtection' || policyType === 'fileDownloadProtection')) {
+      this.renderExtensionList(this.currentEditingPolicy.policyConfig.blockedExtensions || []);
+    }
+  }
+
+  /**
+   * Render extension list for file-based policies
+   * @param {Array} extensions - Array of extensions to render
+   */
+  renderExtensionList(extensions) {
     this.domElements.extensionList.innerHTML = '';
     
-    // Populate pattern selection for paste protection
-    if (policyType === 'pasteProtection') {
-      const enabledPatterns = policyConfig.enabledPatterns || [];
+    extensions.forEach(ext => {
+      const row = document.createElement('div');
+      row.className = 'extension-row';
       
-      // Add all available patterns from the pattern repository
-      for (const [name, details] of Object.entries(this.patternRepository)) {
-        const isChecked = enabledPatterns.includes(name);
-        this.addPatternCheckbox(name, isChecked);
-      }
-    }
-    
-    // Populate extension selection for file upload protection
-    if (policyType === 'fileUploadProtection') {
-      const blockedExtensions = policyConfig.blockedExtensions || [];
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'extension-input';
+      input.value = ext;
       
-      // Add all common file extensions
-      const commonExtensions = ['.js', '.jsx', '.ts', '.tsx', '.php', '.py', '.rb', '.env', 
-        '.config', '.yml', '.yaml', '.json', '.sh', '.bash', '.zsh', '.conf', '.htaccess', 
-        '.htpasswd', '.sql', '.log', '.xml', '.csv'];
-      
-      commonExtensions.forEach(ext => {
-        const isChecked = blockedExtensions.includes(ext);
-        this.addExtensionCheckbox(ext, isChecked);
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'remove-extension';
+      removeBtn.textContent = 'X';
+      removeBtn.addEventListener('click', () => {
+        row.remove();
+        this.markAsChanged();
       });
-    }
+      
+      row.appendChild(input);
+      row.appendChild(removeBtn);
+      this.domElements.extensionList.appendChild(row);
+    });
+    
+    // Add an "add extension" button
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'add-extension';
+    addBtn.textContent = '+ Add Extension';
+    addBtn.addEventListener('click', () => this.addExtensionToList());
+    
+    this.domElements.extensionList.appendChild(addBtn);
   }
 
   /**
-   * Add a pattern checkbox to the pattern list
-   * @param {string} name - Pattern name
-   * @param {boolean} checked - Whether the pattern is enabled
+   * Add a new extension input to the list
    */
-  addPatternCheckbox(name, checked) {
-    const item = document.createElement('div');
-    item.className = 'form-check';
+  addExtensionToList() {
+    const row = document.createElement('div');
+    row.className = 'extension-row';
     
     const input = document.createElement('input');
-    input.type = 'checkbox';
-    input.className = 'pattern-checkbox';
-    input.id = `pattern-${name.replace(/\s+/g, '-')}`;
-    input.value = name;
-    input.checked = checked;
+    input.type = 'text';
+    input.className = 'extension-input';
+    input.placeholder = 'File extension (e.g., pdf)';
     
-    const label = document.createElement('label');
-    label.htmlFor = input.id;
-    label.textContent = name;
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'remove-extension';
+    removeBtn.textContent = 'X';
+    removeBtn.addEventListener('click', () => {
+      row.remove();
+      this.markAsChanged();
+    });
     
-    item.appendChild(input);
-    item.appendChild(label);
+    row.appendChild(input);
+    row.appendChild(removeBtn);
     
-    this.domElements.patternList.appendChild(item);
+    // Insert before the Add button
+    const addBtn = this.domElements.extensionList.querySelector('.add-extension');
+    this.domElements.extensionList.insertBefore(row, addBtn);
+    this.markAsChanged();
   }
 
   /**
-   * Add an extension checkbox to the extension list
-   * @param {string} ext - File extension
-   * @param {boolean} checked - Whether the extension is blocked
+   * Collect extensions from the policy editor
    */
-  addExtensionCheckbox(ext, checked) {
-    const item = document.createElement('div');
-    item.className = 'form-check';
+  collectExtensionsFromPolicy() {
+    const extensions = [];
+    const extensionInputs = this.domElements.extensionList.querySelectorAll('.extension-input');
     
-    const input = document.createElement('input');
-    input.type = 'checkbox';
-    input.className = 'extension-checkbox';
-    input.id = `ext-${ext.replace(/\./g, '')}`;
-    input.value = ext;
-    input.checked = checked;
+    extensionInputs.forEach(input => {
+      const ext = input.value.trim().toLowerCase();
+      if (ext) {
+        extensions.push(ext);
+      }
+    });
     
-    const label = document.createElement('label');
-    label.htmlFor = input.id;
-    label.textContent = ext;
-    
-    item.appendChild(input);
-    item.appendChild(label);
-    
-    this.domElements.extensionList.appendChild(item);
-  }
-
-  /**
-   * Hide the policy editor
-   */
-  hidePolicyEditor() {
-    this.domElements.policyEditor.classList.add('hidden');
-    this.currentEditingPolicy = null;
+    return extensions;
   }
 
   /**
@@ -639,17 +633,17 @@ class OptionsManager {
    */
   saveCurrentPolicy() {
     if (!this.currentEditingPolicy) return;
-    
+
     // Update policy from form
     this.currentEditingPolicy.policyName = this.domElements.policyName.value;
     this.currentEditingPolicy.policyType = this.domElements.policyType.value;
     this.currentEditingPolicy.enabled = this.domElements.policyEnabled.checked;
-    
+
     // Rebuild policy config based on type
     const policyConfig = {
       mode: this.domElements.policyMode.value
     };
-    
+
     if (this.currentEditingPolicy.policyType === 'pasteProtection') {
       const enabledPatterns = [];
       document.querySelectorAll('.pattern-checkbox:checked').forEach(checkbox => {
@@ -657,17 +651,14 @@ class OptionsManager {
       });
       policyConfig.enabledPatterns = enabledPatterns;
     }
-    
-    if (this.currentEditingPolicy.policyType === 'fileUploadProtection') {
-      const blockedExtensions = [];
-      document.querySelectorAll('.extension-checkbox:checked').forEach(checkbox => {
-        blockedExtensions.push(checkbox.value);
-      });
-      policyConfig.blockedExtensions = blockedExtensions;
+
+    if (this.currentEditingPolicy.policyType === 'fileUploadProtection' || 
+        this.currentEditingPolicy.policyType === 'fileDownloadProtection') {
+      policyConfig.blockedExtensions = this.collectExtensionsFromPolicy();
     }
-    
+
     this.currentEditingPolicy.policyConfig = policyConfig;
-    
+
     // Save to storage
     PolicyManager.savePolicy(this.currentEditingPolicy).then(() => {
       this.allPolicies[this.currentEditingPolicy.policyId] = this.currentEditingPolicy;
@@ -685,7 +676,7 @@ class OptionsManager {
    */
   deleteCurrentPolicy() {
     if (!this.currentEditingPolicy) return;
-    
+
     PolicyManager.deletePolicy(this.currentEditingPolicy.policyId).then(() => {
       delete this.allPolicies[this.currentEditingPolicy.policyId];
       this.renderPolicyList();
@@ -703,7 +694,7 @@ class OptionsManager {
    */
   renderPolicyList() {
     this.domElements.policyList.innerHTML = '';
-    
+
     if (Object.keys(this.allPolicies).length === 0) {
       const emptyMessage = document.createElement('div');
       emptyMessage.className = 'empty-list-message';
@@ -711,7 +702,7 @@ class OptionsManager {
       this.domElements.policyList.appendChild(emptyMessage);
       return;
     }
-    
+
     for (const [id, policy] of Object.entries(this.allPolicies)) {
       this.addPolicyListItem(policy);
     }
@@ -725,14 +716,14 @@ class OptionsManager {
     const item = document.createElement('div');
     item.className = 'policy-item';
     item.dataset.policyId = policy.policyId;
-    
+
     const info = document.createElement('div');
     info.className = 'policy-info';
-    
+
     const name = document.createElement('div');
     name.className = 'policy-name';
     name.textContent = policy.policyName;
-    
+
     const type = document.createElement('div');
     type.className = 'policy-type';
     switch (policy.policyType) {
@@ -741,21 +732,21 @@ class OptionsManager {
       case 'fileDownloadProtection': type.textContent = 'File Download Protection'; break;
       default: type.textContent = policy.policyType;
     }
-    
+
     info.appendChild(name);
     info.appendChild(type);
-    
+
     const status = document.createElement('div');
     status.className = `policy-status ${policy.enabled ? '' : 'disabled'}`;
     status.textContent = policy.enabled ? 'Enabled' : 'Disabled';
-    
+
     item.appendChild(info);
     item.appendChild(status);
-    
+
     item.addEventListener('click', () => {
       this.showPolicyEditor(policy);
     });
-    
+
     this.domElements.policyList.appendChild(item);
   }
 
@@ -765,17 +756,17 @@ class OptionsManager {
    */
   showDomainMappingEditor(mapping = null) {
     this.currentEditingDomain = mapping || { domainPattern: '', appliedPolicies: [] };
-    
+
     this.domElements.domainPattern.value = this.currentEditingDomain.domainPattern;
-    
+
     // Populate the applied policies checkboxes
     this.domElements.appliedPoliciesList.innerHTML = '';
-    
+
     for (const [id, policy] of Object.entries(this.allPolicies)) {
       const isApplied = this.currentEditingDomain.appliedPolicies.includes(id);
       this.addPolicyCheckbox(policy, isApplied);
     }
-    
+
     this.domElements.domainMappingEditor.classList.remove('hidden');
   }
 
@@ -787,21 +778,21 @@ class OptionsManager {
   addPolicyCheckbox(policy, checked) {
     const item = document.createElement('div');
     item.className = 'form-check';
-    
+
     const input = document.createElement('input');
     input.type = 'checkbox';
     input.className = 'policy-checkbox';
     input.id = `policy-${policy.policyId}`;
     input.value = policy.policyId;
     input.checked = checked;
-    
+
     const label = document.createElement('label');
     label.htmlFor = input.id;
     label.innerHTML = `<strong>${policy.policyName}</strong> <span class="policy-type-small">(${policy.policyType})</span>`;
-    
+
     item.appendChild(input);
     item.appendChild(label);
-    
+
     this.domElements.appliedPoliciesList.appendChild(item);
   }
 
@@ -818,17 +809,17 @@ class OptionsManager {
    */
   saveCurrentDomainMapping() {
     if (!this.currentEditingDomain) return;
-    
+
     // Update mapping from form
     this.currentEditingDomain.domainPattern = this.domElements.domainPattern.value;
-    
+
     // Get selected policies
     const appliedPolicies = [];
     document.querySelectorAll('.policy-checkbox:checked').forEach(checkbox => {
       appliedPolicies.push(checkbox.value);
     });
     this.currentEditingDomain.appliedPolicies = appliedPolicies;
-    
+
     // Save to storage
     PolicyManager.saveDomainMapping(this.currentEditingDomain).then(() => {
       this.loadAllData(); // Reload to update both policies and mappings
@@ -845,7 +836,7 @@ class OptionsManager {
    */
   deleteCurrentDomainMapping() {
     if (!this.currentEditingDomain || !this.currentEditingDomain.domainPattern) return;
-    
+
     PolicyManager.deleteDomainMapping(this.currentEditingDomain.domainPattern).then(() => {
       this.loadAllData(); // Reload data
       this.hideDomainMappingEditor();
@@ -861,7 +852,7 @@ class OptionsManager {
    */
   renderDomainMappings() {
     this.domElements.domainMappingContainer.innerHTML = '';
-    
+
     if (this.allDomainMappings.length === 0) {
       const emptyMessage = document.createElement('div');
       emptyMessage.className = 'empty-list-message';
@@ -869,7 +860,7 @@ class OptionsManager {
       this.domElements.domainMappingContainer.appendChild(emptyMessage);
       return;
     }
-    
+
     for (const mapping of this.allDomainMappings) {
       this.addDomainMappingItem(mapping);
     }
@@ -882,35 +873,35 @@ class OptionsManager {
   addDomainMappingItem(mapping) {
     const item = document.createElement('div');
     item.className = 'domain-mapping-item';
-    
+
     const pattern = document.createElement('div');
     pattern.className = 'domain-pattern';
     pattern.textContent = mapping.domainPattern;
-    
+
     const policies = document.createElement('div');
     policies.className = 'domain-policies';
-    
+
     // List applied policy names
     const policyNames = mapping.appliedPolicies.map(id => {
       return this.allPolicies[id] ? this.allPolicies[id].policyName : id;
     }).join(', ');
-    
+
     policies.textContent = policyNames || 'No policies applied';
-    
+
     const editButton = document.createElement('button');
     editButton.textContent = 'Edit';
     editButton.className = 'button-secondary';
     editButton.style.marginLeft = '10px';
-    
+
     editButton.addEventListener('click', (e) => {
       e.stopPropagation(); // Prevent item click
       this.showDomainMappingEditor(mapping);
     });
-    
+
     item.appendChild(pattern);
     item.appendChild(policies);
     item.appendChild(editButton);
-    
+
     this.domElements.domainMappingContainer.appendChild(item);
   }
 
@@ -921,7 +912,7 @@ class OptionsManager {
     // Clear containers
     this.clearContainer(this.containers.defaultRegex);
     this.clearContainer(this.containers.customRegex);
-    
+
     // Add patterns from repository
     for (const [name, details] of Object.entries(this.patternRepository)) {
       if (details.isDefault) {
@@ -932,38 +923,10 @@ class OptionsManager {
         this.addCustomRegexRow(name, details.pattern, details.enabled, details.sampleData);
       }
     }
-    
+
     // Ensure at least one custom pattern row exists
     if (!document.querySelector('.custom-regex-row:not(#regex-template)')) {
       this.addCustomRegexRow();
-    }
-  }
-
-  /**
-   * Load global settings to UI
-   */
-  loadGlobalSettings() {
-    // Clear containers
-    this.clearContainer(this.containers.customUrl);
-    this.clearContainer(this.containers.fileExt);
-    
-    // Load URLs
-    this.api.storage.local.get(['customUrls']).then(result => {
-      const storedUrls = result.customUrls || [];
-      
-      // Add saved URLs or at least one empty row
-      if (storedUrls && storedUrls.length > 0) {
-        storedUrls.forEach(url => this.addCustomUrlRow(url));
-      } else {
-        this.addCustomUrlRow();
-      }
-    });
-    
-    // Load file extensions
-    if (this.blockFileTypes && this.blockFileTypes.length > 0) {
-      this.blockFileTypes.forEach(fileExt => this.addCustomExtensionRow(fileExt));
-    } else {
-      this.addCustomExtensionRow();
     }
   }
 
@@ -974,33 +937,17 @@ class OptionsManager {
   collectPatternRepository() {
     // Process default regex patterns
     const defaultRegexPatterns = this.collectDefaultRegexPatterns();
-    
+
     // Get custom regex patterns
     const customRegexPatterns = this.collectCustomRegexPatterns();
-    
+
     // Combine all regex patterns
     return { ...defaultRegexPatterns, ...customRegexPatterns };
   }
 
-  /**
-   * Collect global settings from UI
-   * @returns {Object} Global settings
-   */
-  collectGlobalSettings() {
-    // Get custom URL patterns
-    const customUrls = this.collectCustomUrlPatterns();
-    
-    // Get file extension patterns
-    const blockFileTypes = this.collectFileExtensions();
-    
-    return {
-      customUrls,
-      blockFileTypes
-    };
-  }
 
   /* The rest of your existing methods for pattern repository and settings handling */
-  
+
   /**
    * Collect default regex patterns from the form
    * @returns {Object} Default regex patterns with their settings
@@ -1014,7 +961,7 @@ class OptionsManager {
       const name = nameElement.textContent;
       const enabled = row.querySelector('.toggle-regex').checked;
       const sampleInput = row.querySelector('.regex-sample');
-      const sampleData = sampleInput ? sampleInput.value : 
+      const sampleData = sampleInput ? sampleInput.value :
         this.OptimusPII.DEFAULT_REGEX_PATTERNS[name].sampleData;
 
       if (this.OptimusPII.DEFAULT_REGEX_PATTERNS[name]) {
@@ -1040,7 +987,7 @@ class OptionsManager {
 
     customRegexElements.forEach((row, index) => {
       if (index === 0) return;
-      
+
       const nameInput = row.querySelector('.regex-name');
       const patternInput = row.querySelector('.regex-pattern');
       const sampleInput = row.querySelector('.regex-sample');
@@ -1060,45 +1007,7 @@ class OptionsManager {
     return customRegexPatterns;
   }
 
-  /**
-   * Collect custom URL patterns from the form
-   * @returns {Array} List of URL patterns
-   */
-  collectCustomUrlPatterns() {
-    const customUrlElements = document.querySelectorAll('.custom-url-row:not(#url-template)');
-    const customUrls = [];
 
-    customUrlElements.forEach(row => {
-      const urlPattern = row.querySelector('.url-pattern').value.trim();
-      if (urlPattern) {
-        customUrls.push(urlPattern);
-      }
-    });
-
-    return customUrls;
-  }
-
-  /**
-   * Collect file extension patterns from the form
-   * @returns {Array} List of file extensions to block
-   */
-  collectFileExtensions() {
-    const fileExtElements = document.querySelectorAll('.file-ext-row:not(#file-ext-template)');
-    const blockFileTypes = [];
-
-    fileExtElements.forEach(row => {
-      const fileExt = row.querySelector('.file-ext-pattern').value.trim();
-      if (fileExt) {
-        if (!fileExt.startsWith('.')) {
-          blockFileTypes.push('.' + fileExt.toLowerCase());
-        } else {
-          blockFileTypes.push(fileExt.toLowerCase());
-        }
-      }
-    });
-
-    return blockFileTypes;
-  }
 
   /**
    * Show save confirmation message
@@ -1106,7 +1015,7 @@ class OptionsManager {
   showSaveConfirmation() {
     const status = this.domElements.statusIndicator;
     status.style.opacity = '1';
-    setTimeout(function() {
+    setTimeout(function () {
       status.style.opacity = '0';
     }, 2000);
   }
@@ -1149,7 +1058,7 @@ class OptionsManager {
     `;
 
     const toggleSwitch = this.createToggleSwitch(enabled);
-    
+
     // Create name element
     const nameElement = document.createElement('div');
     nameElement.className = 'regex-name';
@@ -1269,7 +1178,7 @@ class OptionsManager {
 
     toggleSlider.appendChild(sliderHandle);
 
-    toggleInput.addEventListener('change', function() {
+    toggleInput.addEventListener('change', function () {
       sliderHandle.style.transform = this.checked ? 'translateX(18px)' : 'translateX(0)';
       toggleSlider.style.backgroundColor = this.checked ? '#0078d7' : '#ccc';
     });
@@ -1314,77 +1223,6 @@ class OptionsManager {
     // Add to container
     if (this.containers.customRegex) {
       this.containers.customRegex.appendChild(newRow);
-    }
-  }
-
-  /**
-   * Add a custom URL pattern row to the UI
-   * @param {string} url - The URL pattern
-   */
-  addCustomUrlRow(url = '') {
-    // Clone the template
-    const newRow = this.templates.urlTemplate.cloneNode(true);
-    newRow.id = '';
-    newRow.classList.remove('hidden');
-
-    // Set value if provided
-    const urlInput = newRow.querySelector('.url-pattern');
-    if (urlInput) {
-      urlInput.value = url;
-    }
-
-    // Add remove button functionality
-    const removeButton = newRow.querySelector('.remove-url');
-    if (removeButton) {
-      removeButton.addEventListener('click', () => {
-        const urlPattern = urlInput ? urlInput.value.trim() : '';
-        
-        // Check if it's a default URL that shouldn't be removed
-        if (this.OptimusPII.DEFAULT_URLS && 
-            this.OptimusPII.DEFAULT_URLS.includes(urlPattern)) {
-          alert('Cannot remove default URL pattern');
-          return;
-        }
-        
-        newRow.remove();
-        this.markAsChanged();
-      });
-    }
-
-    // Add to container
-    if (this.containers.customUrl) {
-      this.containers.customUrl.appendChild(newRow);
-    }
-  }
-
-  /**
-   * Add a custom file extension row to the UI
-   * @param {string} fileExt - The file extension
-   */
-  addCustomExtensionRow(fileExt = '') {
-    // Clone the template
-    const newRow = this.templates.fileExtTemplate.cloneNode(true);
-    newRow.id = '';
-    newRow.classList.remove('hidden');
-
-    // Set value if provided
-    const fileExtInput = newRow.querySelector('.file-ext-pattern');
-    if (fileExtInput) {
-      fileExtInput.value = fileExt;
-    }
-
-    // Add remove button functionality
-    const removeButton = newRow.querySelector('.remove-ext');
-    if (removeButton) {
-      removeButton.addEventListener('click', () => {
-        newRow.remove();
-        this.markAsChanged();
-      });
-    }
-
-    // Add to container
-    if (this.containers.fileExt) {
-      this.containers.fileExt.appendChild(newRow);
     }
   }
 }

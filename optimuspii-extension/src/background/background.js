@@ -137,7 +137,6 @@ class OptimusPIIBackground {
     this.initializeRegexPatterns();
     this.initializeCustomUrls();
     this.initializeFileExtensions();
-    this.setupEventListeners();
     this.exportFunctions();
   }
 
@@ -205,6 +204,9 @@ class OptimusPIIBackground {
    * @returns {Promise} A promise that resolves when content scripts are registered
    */
   async registerContentScriptsForUrls(urls) {
+    
+    console.log('Registering content scripts for URLs:', urls);
+
     if (!urls || urls.length === 0) {
       console.warn('No URLs provided for content script registration');
       return;
@@ -329,11 +331,12 @@ class OptimusPIIBackground {
           
           for (const tab of matchingTabs) {
             try {
-              await this.api.scripting.executeScript({
+              const output = await this.api.scripting.executeScript({
                 target: { tabId: tab.id, allFrames: true },
-                files: ["content.js"]
+                files: ["../content.js"]
               });
               console.log(`Content script injected into tab ${tab.id}`);
+              console.log(output);
             } catch (tabError) {
               console.error(`Failed to inject script into tab ${tab.id}:`, tabError.message);
             }
@@ -345,19 +348,6 @@ class OptimusPIIBackground {
     } catch (queryError) {
       console.error('Error querying tabs:', queryError.message);
     }
-  }
-
-  /**
-   * Setup event listeners for the extension
-   */
-  setupEventListeners() {
-    // Listen for changes to custom URLs
-    this.api.storage.onChanged.addListener((changes, area) => {
-      if (area === 'local' && changes.customUrls) {
-        console.log('Custom URLs changed, updating content scripts');
-        this.registerContentScriptsForUrls(changes.customUrls.newValue);
-      }
-    });
   }
 
   /**
@@ -398,6 +388,80 @@ class OptimusPIIBackground {
       }
 
     });
+  }
+
+  /**
+   * Check if file upload/download should be blocked based on policies
+   * @param {Object} details - Details of the file operation
+   * @param {string} operationType - Type of operation ('upload' or 'download')
+   * @returns {Promise<boolean>} Promise resolving to true if should block
+   */
+  checkFilePolicy(details, operationType) {
+    const url = details.url || details.initiator || '';
+    const filename = details.filename || '';
+    const fileExt = this.getFileExtension(filename).toLowerCase();
+    
+    if (!fileExt) return Promise.resolve(false);
+    
+    return this.getApplicablePolicies(url).then(policies => {
+      // Filter for file policies that match the operation type
+      const policyType = operationType === 'upload' ? 'fileUploadProtection' : 'fileDownloadProtection';
+      const filePolicies = Object.values(policies).filter(policy => 
+        policy.policyType === policyType && policy.enabled
+      );
+      
+      // Check if any policy blocks this extension
+      return filePolicies.some(policy => 
+        policy.policyConfig.blockedExtensions && 
+        policy.policyConfig.blockedExtensions.includes(fileExt)
+      );
+    });
+  }
+
+  /**
+   * Get applicable policies for a URL
+   * @param {string} url - URL to check
+   * @returns {Promise<Object>} Promise resolving to applicable policies
+   */
+  getApplicablePolicies(url) {
+    return Promise.all([
+      this.api.storage.local.get('policies'),
+      this.api.storage.local.get('domainMappings')
+    ]).then(([policiesResult, mappingsResult]) => {
+      const policies = policiesResult.policies || {};
+      const domainMappings = mappingsResult.domainMappings || [];
+      
+      // Find matching domain mappings
+      const matchingMappings = domainMappings.filter(mapping => 
+        this.urlMatchesPattern(url, mapping.domainPattern)
+      );
+      
+      // Get all policy IDs from matching mappings
+      const policyIds = new Set();
+      matchingMappings.forEach(mapping => {
+        mapping.appliedPolicies.forEach(id => policyIds.add(id));
+      });
+      
+      // Filter policies by ID
+      const applicablePolicies = {};
+      policyIds.forEach(id => {
+        if (policies[id]) {
+          applicablePolicies[id] = policies[id];
+        }
+      });
+      
+      return applicablePolicies;
+    });
+  }
+
+  /**
+   * Get file extension from filename
+   * @param {string} filename - Name of the file
+   * @returns {string} File extension without the dot
+   */
+  getFileExtension(filename) {
+    const parts = filename.split('.');
+    return parts.length > 1 ? parts.pop() : '';
   }
 }
 

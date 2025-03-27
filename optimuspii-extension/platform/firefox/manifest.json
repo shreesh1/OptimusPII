@@ -10,7 +10,6 @@
     "96": "icon/icon.png"
   },
   "permissions": [
-    "scripting",
     "storage",
     "activeTab",
     "contextMenus",

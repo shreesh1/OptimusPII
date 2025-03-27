@@ -17,7 +17,6 @@
       <div class="tab active" data-tab="policies">Policies</div>
       <div class="tab" data-tab="domains">Domain Mappings</div>
       <div class="tab" data-tab="patterns">Pattern Repository</div>
-      <div class="tab" data-tab="settings">Global Settings</div>
     </div>
 
     <!-- Policies Tab -->
@@ -158,38 +157,6 @@
 
         <button type="button" id="add-regex">Add Pattern</button>
         <div class="help-text">Sample data will be used as replacement when choosing to paste redacted values.</div>
-      </div>
-    </div>
-
-    <!-- Global Settings Tab -->
-    <div class="tab-content" id="settings-content">
-      <div class="setting-group">
-        <h2>File Extension Blocking</h2>
-        <div class="help-text">File extensions to be blocked globally when not covered by specific policies</div>
-
-        <div id="custom-file-ext-container">
-          <div id="file-ext-template" class="file-ext-row hidden">
-            <input type="text" class="file-ext-pattern" placeholder="Add file extension" />
-            <button type="button" class="remove-ext">X</button>
-          </div>
-        </div>
-
-        <button type="button" id="add-ext">Add Extension</button>
-      </div>
-
-      <div class="section">
-        <h2>Websites to Monitor</h2>
-        <div class="help-text">Use patterns like "https://example.com/*" to match all pages on a domain. 
-          Use "*://*.example.com/*" to match all subdomains and protocols.</div>
-
-        <div id="custom-url-container">
-          <div id="url-template" class="custom-url-row hidden">
-            <input type="text" class="url-pattern" placeholder="URL pattern (e.g., 'https://example.com/*')" />
-            <button type="button" class="remove-url">X</button>
-          </div>
-        </div>
-
-        <button type="button" id="add-url">Add Website</button>
       </div>
     </div>
   </div>

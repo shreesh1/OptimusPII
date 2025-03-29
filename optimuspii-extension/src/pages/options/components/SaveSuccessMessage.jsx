@@ -1,33 +1,10 @@
-import React, { useEffect } from 'react';
-import './SaveSuccessMessage.css';
+import React from 'react';
+import { Alert } from 'react-bootstrap';
 
-/**
- * Component that shows a temporary success message after saving changes
- */
-const SaveSuccessMessage = ({ 
-  show, 
-  onHide, 
-  message = "Changes saved successfully", 
-  duration = 3000 
-}) => {
-  useEffect(() => {
-    if (show) {
-      const timer = setTimeout(() => {
-        onHide();
-      }, duration);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [show, onHide, duration]);
-  
-  if (!show) return null;
-  
+export default function SaveSuccessMessage() {
   return (
-    <div className={`success-message ${show ? 'show' : 'hide'}`}>
-      <div className="success-icon">✓</div>
-      <div className="success-text">{message}</div>
-    </div>
+    <Alert variant="success" className="save-success-message">
+      Changes saved successfully!
+    </Alert>
   );
-};
-
-export default SaveSuccessMessage;
+}

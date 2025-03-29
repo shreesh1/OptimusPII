@@ -1,4 +1,5 @@
 import React from 'react';
+import { Modal, Button } from 'react-bootstrap';
 
 export default function ConfirmModal({ 
   isOpen,
@@ -9,33 +10,22 @@ export default function ConfirmModal({
   onConfirm,
   onCancel 
 }) {
-  if (!isOpen) return null;
-
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h3>{title}</h3>
-          <button className="modal-close" onClick={onCancel}>&times;</button>
-        </div>
-        <div className="modal-body">
-          <p>{message}</p>
-        </div>
-        <div className="modal-footer">
-          <button 
-            className="button-secondary" 
-            onClick={onCancel}
-          >
-            {cancelText}
-          </button>
-          <button 
-            className="button-primary" 
-            onClick={onConfirm}
-          >
-            {confirmText}
-          </button>
-        </div>
-      </div>
-    </div>
+    <Modal show={isOpen} onHide={onCancel}>
+      <Modal.Header closeButton>
+        <Modal.Title>{title}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p>{message}</p>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={onCancel}>
+          {cancelText}
+        </Button>
+        <Button variant="primary" onClick={onConfirm}>
+          {confirmText}
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }

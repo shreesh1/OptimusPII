@@ -136,4 +136,40 @@ export class StorageService {
   static async savePatternRepository(patternRepository) {
     return chrome.storage.local.set({ regexPatterns: patternRepository });
   }
+
+  static async loadOptions() {
+    try {
+      const [policies, domainMappings, patterns] = await Promise.all([
+        this.getAllPolicies(),
+        this.getAllDomainMappings(),
+        this.getPatternRepository()
+      ]);
+
+      return {
+        policies,
+        domainMappings,
+        patterns
+      };
+    } catch (error) {
+      console.error('Error loading options:', error);
+      throw error;
+    }
+  }
+
+  // Add this method to your StorageService class
+  static async saveAllOptions({ policies, domainMappings, patterns }) {
+    try {
+      await chrome.storage.local.set({
+        policies,
+        domainMappings,
+        regexPatterns: patterns
+      });
+      return true;
+    } catch (error) {
+      console.error('Error saving options:', error);
+      throw error;
+    }
+  }
+
 }
+

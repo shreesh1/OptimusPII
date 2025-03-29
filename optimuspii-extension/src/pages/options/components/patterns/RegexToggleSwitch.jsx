@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Form } from 'react-bootstrap';
 import './RegexToggleSwitch.css';
 
 const RegexToggleSwitch = ({ enabled, onChange }) => {
@@ -14,17 +15,13 @@ const RegexToggleSwitch = ({ enabled, onChange }) => {
   };
   
   return (
-    <label className="switch">
-      <input 
-        type="checkbox" 
-        className="toggle-regex" 
-        checked={isEnabled} 
-        onChange={handleChange}
-      />
-      <span className="slider">
-        <span className="handle"></span>
-      </span>
-    </label>
+    <Form.Check 
+      type="switch"
+      id={`regex-switch-${Math.random().toString(36).substring(7)}`}
+      checked={isEnabled}
+      onChange={handleChange}
+      className="regex-toggle-switch"
+    />
   );
 };
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button, ListGroup, Card, Badge } from 'react-bootstrap';
 import { StorageService } from '../../services/StorageService';
 import DomainMappingEditor from '../forms/DomainMappingEditor';
 import ConfirmModal from '../ConfirmModal';
@@ -10,119 +11,134 @@ const DomainMappingsTab = ({ domainMappings, setDomainMappings, policies, onChan
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   
   const handleCreateMapping = () => {
-    setCurrentMapping({ domainPattern: '', appliedPolicies: [] });
+    setCurrentMapping({
+      domainPattern: '',
+      appliedPolicies: []
+    });
     setShowEditor(true);
   };
-
+  
   const handleEditMapping = (mapping) => {
     setCurrentMapping({...mapping});
     setShowEditor(true);
   };
-
+  
   const handleSaveMapping = async (mapping) => {
     try {
-      const updatedMappings = await StorageService.saveDomainMapping(mapping, domainMappings);
+      const updatedMappings = await StorageService.saveDomainMapping(mapping);
       setDomainMappings(updatedMappings);
       setShowEditor(false);
       setCurrentMapping(null);
       onChange();
     } catch (error) {
-      console.error('Failed to save domain mapping:', error);
-      // Add error handling UI here
-    }
-  };
-
-  const handleDeleteMapping = async () => {
-    if (!currentMapping?.domainPattern) return;
-    
-    try {
-      const updatedMappings = await StorageService.deleteDomainMapping(
-        currentMapping.domainPattern, 
-        domainMappings
-      );
-      
-      setDomainMappings(updatedMappings);
-      setShowEditor(false);
-      setShowConfirmDelete(false);
-      setCurrentMapping(null);
-      onChange();
-    } catch (error) {
-      console.error('Failed to delete domain mapping:', error);
-      // Add error handling UI here
+      console.error('Error saving domain mapping:', error);
+      alert(`Error: ${error.message}`);
     }
   };
   
-  const confirmDelete = () => {
+  const handleDeleteMapping = async () => {
     setShowConfirmDelete(true);
   };
-
-  const handleCancelDelete = () => {
-    setShowConfirmDelete(false);
+  
+  const confirmDeleteMapping = async () => {
+    if (!currentMapping?.domainPattern) return;
+    
+    try {
+      const updatedMappings = await StorageService.deleteDomainMapping(currentMapping.domainPattern);
+      setDomainMappings(updatedMappings);
+      setShowConfirmDelete(false);
+      setShowEditor(false);
+      setCurrentMapping(null);
+      onChange();
+    } catch (error) {
+      console.error('Error deleting domain mapping:', error);
+      alert(`Error: ${error.message}`);
+    }
   };
-
-  const handleCancelEdit = () => {
+  
+  const cancelEditor = () => {
     setShowEditor(false);
     setCurrentMapping(null);
   };
-
+  
+  const getPolicyName = (policyId) => {
+    return policies[policyId]?.name || policyId;
+  };
+  
   return (
     <div className="domain-mappings-tab">
-      <h2>Domain Policy Mappings</h2>
+      {!showEditor && (
+        <>
+          <div className="domain-mappings-header d-flex justify-content-between align-items-center mb-3">
+            <h3>Domain Mappings</h3>
+            <Button 
+              variant="primary"
+              onClick={handleCreateMapping}
+            >
+              + Add Domain Mapping
+            </Button>
+          </div>
+          
+          <div className="domain-mappings-list">
+            {Object.keys(domainMappings).length === 0 ? (
+              <Card body className="text-center bg-light">
+                No domain mappings created yet. Click "Add Domain Mapping" to create one.
+              </Card>
+            ) : (
+              <ListGroup>
+                {Object.entries(domainMappings).map(([pattern, mapping]) => (
+                  <ListGroup.Item 
+                    key={pattern}
+                    action
+                    onClick={() => handleEditMapping(mapping)}
+                  >
+                    <div className="domain-pattern">
+                      <strong>{mapping.domainPattern}</strong>
+                    </div>
+                    <div className="applied-policies mt-2">
+                      {mapping.appliedPolicies.length === 0 ? (
+                        <span className="text-muted">No policies applied</span>
+                      ) : (
+                        <div>
+                          {mapping.appliedPolicies.map(policyId => (
+                            <Badge 
+                              key={policyId}
+                              bg={policies[policyId]?.enabled ? "primary" : "secondary"}
+                              className="me-1"
+                            >
+                              {getPolicyName(policyId)}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            )}
+          </div>
+        </>
+      )}
       
-      <div className="domain-mapping-container">
-        {domainMappings.length === 0 ? (
-          <div className="empty-list-message">
-            No domain mappings defined. Click "Add Domain Mapping" below to create one.
-          </div>
-        ) : (
-          <div className="mapping-list">
-            {domainMappings.map((mapping, index) => (
-              <div 
-                key={index} 
-                className="domain-mapping-item"
-              >
-                <div className="domain-pattern">{mapping.domainPattern}</div>
-                <div className="domain-policies">
-                  {mapping.appliedPolicies.map(id => 
-                    policies[id]?.policyName || id
-                  ).join(', ') || 'No policies applied'}
-                </div>
-                <button 
-                  className="edit-button button-secondary"
-                  onClick={() => handleEditMapping(mapping)}
-                >
-                  Edit
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-        
-        <button 
-          className="create-mapping-button"
-          onClick={handleCreateMapping}
-        >
-          Add Domain Mapping
-        </button>
-      </div>
-
       {showEditor && currentMapping && (
         <DomainMappingEditor
           mapping={currentMapping}
           policies={policies}
           onSave={handleSaveMapping}
-          onDelete={confirmDelete}
-          onCancel={handleCancelEdit}
+          onDelete={handleDeleteMapping}
+          onCancel={cancelEditor}
         />
       )}
-
-      {showConfirmDelete && (
-        <ConfirmModal
-          message="Are you sure you want to delete this domain mapping? This action cannot be undone."
-          onConfirm={handleDeleteMapping}
-          onCancel={handleCancelDelete}
-        />
-      )}
+      
+      <ConfirmModal
+        isOpen={showConfirmDelete}
+        title="Delete Domain Mapping"
+        message={`Are you sure you want to delete mapping for "${currentMapping?.domainPattern}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDeleteMapping}
+        onCancel={() => setShowConfirmDelete(false)}
+      />
     </div>
   );
 };

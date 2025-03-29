@@ -1,4 +1,7 @@
 import React from 'react';
+import { Card, Button, Form, Row, Col } from 'react-bootstrap';
+import RegexToggleSwitch from './RegexToggleSwitch';
+import './RegexList.css';
 
 const CustomRegexList = ({ patterns, onChange, onDeletePattern }) => {
   const handleAddPattern = () => {
@@ -64,61 +67,64 @@ const CustomRegexList = ({ patterns, onChange, onDeletePattern }) => {
   return (
     <div className="custom-patterns-list">
       {Object.entries(patterns).map(([name, details]) => (
-        <div key={name} className="pattern-row">
-          <div className="pattern-toggle">
-            <input
-              type="checkbox"
-              id={`toggle-${name}`}
-              checked={details.enabled}
-              onChange={(e) => handleTogglePattern(name, e.target.checked)}
-            />
-            <label htmlFor={`toggle-${name}`}></label>
-          </div>
-          
-          <div className="pattern-name">
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => handlePatternNameChange(name, e.target.value)}
-              placeholder="Pattern Name"
-            />
-          </div>
-          
-          <div className="pattern-regex">
-            <input
-              type="text"
-              value={details.pattern}
-              onChange={(e) => handlePatternChange(name, e.target.value)}
-              placeholder="Regular Expression Pattern"
-            />
-          </div>
-          
-          <div className="pattern-sample">
-            <input
-              type="text"
-              value={details.sampleData || ''}
-              onChange={(e) => handleSampleDataChange(name, e.target.value)}
-              placeholder="REDACTED"
-            />
-          </div>
-          
-          <button
-            type="button"
-            className="delete-pattern"
-            onClick={() => onDeletePattern(name)}
-          >
-            X
-          </button>
-        </div>
+        <Card className="mb-3 custom-regex-row" key={name}>
+          <Card.Body>
+            <Row className="align-items-center mb-2">
+              <Col xs="auto">
+                <RegexToggleSwitch
+                  enabled={details.enabled}
+                  onChange={(isEnabled) => handleTogglePattern(name, isEnabled)}
+                />
+              </Col>
+              <Col>
+                <Form.Control
+                  type="text"
+                  value={name}
+                  onChange={(e) => handlePatternNameChange(name, e.target.value)}
+                  placeholder="Pattern Name"
+                />
+              </Col>
+              <Col xs="auto">
+                <Button 
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => onDeletePattern(name)}
+                >
+                  X
+                </Button>
+              </Col>
+            </Row>
+            
+            <Form.Group className="mb-2">
+              <Form.Label>Regular Expression:</Form.Label>
+              <Form.Control
+                type="text"
+                value={details.pattern}
+                onChange={(e) => handlePatternChange(name, e.target.value)}
+                placeholder="Regular Expression Pattern"
+              />
+            </Form.Group>
+            
+            <Form.Group>
+              <Form.Label>Sample Replacement:</Form.Label>
+              <Form.Control
+                type="text"
+                value={details.sampleData || ''}
+                onChange={(e) => handleSampleDataChange(name, e.target.value)}
+                placeholder="REDACTED"
+              />
+            </Form.Group>
+          </Card.Body>
+        </Card>
       ))}
       
-      <button
-        type="button"
-        className="add-pattern"
+      <Button 
+        variant="primary"
         onClick={handleAddPattern}
+        className="mt-2"
       >
         + Add Custom Pattern
-      </button>
+      </Button>
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Form, Button, Row, Col } from 'react-bootstrap';
 import './PolicyEditor.css';
 
 const PolicyEditor = ({ policy, onSave, onDelete, onCancel }) => {
@@ -37,77 +38,31 @@ const PolicyEditor = ({ policy, onSave, onDelete, onCancel }) => {
     }));
   };
 
-  const handlePatternToggle = (patternId) => {
-    setSelectedPatterns(prev => {
-      if (prev.includes(patternId)) {
-        return prev.filter(id => id !== patternId);
-      } else {
-        return [...prev, patternId];
-      }
-    });
-  };
-
-  const handleAddExtension = () => {
-    setExtensions(prev => [...prev, '']);
-  };
-
-  const handleRemoveExtension = (index) => {
-    setExtensions(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleExtensionChange = (index, value) => {
-    setExtensions(prev => {
-      const updated = [...prev];
-      updated[index] = value.trim().toLowerCase();
-      return updated;
-    });
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Update policy with current form data
-    const updatedPolicy = { 
-      ...formData,
-      policyConfig: {
-        ...formData.policyConfig,
-      }
-    };
-    
-    // Add patterns for paste protection
-    if (formData.policyType === 'pasteProtection') {
-      updatedPolicy.policyConfig.enabledPatterns = selectedPatterns;
-    }
-    
-    // Add extensions for file policies
-    if (formData.policyType === 'fileUploadProtection' || 
-        formData.policyType === 'fileDownloadProtection') {
-      updatedPolicy.policyConfig.blockedExtensions = extensions.filter(Boolean);
-    }
-    
-    onSave(updatedPolicy);
+    onSave(formData);
   };
 
   return (
     <div className="policy-editor">
-      <h3>{policy.policyId ? 'Edit Policy' : 'Create Policy'}</h3>
+      <h3>{policy.policyId ? 'Edit Policy' : 'Create New Policy'}</h3>
       
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="policyName">Policy Name</label>
-          <input
+      <Form onSubmit={handleSubmit}>
+        <Form.Group className="mb-3">
+          <Form.Label htmlFor="policyName">Policy Name</Form.Label>
+          <Form.Control
             type="text"
             id="policyName"
-            name="policyName"
-            value={formData.policyName}
+            name="name"
+            value={formData.name || ''}
             onChange={handleChange}
             required
           />
-        </div>
+        </Form.Group>
         
-        <div className="form-group">
-          <label htmlFor="policyType">Policy Type</label>
-          <select
+        <Form.Group className="mb-3">
+          <Form.Label htmlFor="policyType">Type</Form.Label>
+          <Form.Select
             id="policyType"
             name="policyType"
             value={formData.policyType}
@@ -117,12 +72,12 @@ const PolicyEditor = ({ policy, onSave, onDelete, onCancel }) => {
             <option value="pasteProtection">Paste Protection</option>
             <option value="fileUploadProtection">File Upload Protection</option>
             <option value="fileDownloadProtection">File Download Protection</option>
-          </select>
-        </div>
+          </Form.Select>
+        </Form.Group>
         
-        <div className="form-group">
-          <label htmlFor="policyMode">Mode</label>
-          <select
+        <Form.Group className="mb-3">
+          <Form.Label htmlFor="policyMode">Mode</Form.Label>
+          <Form.Select
             id="policyMode"
             name="mode"
             value={formData.policyConfig?.mode || 'interactive'}
@@ -131,102 +86,47 @@ const PolicyEditor = ({ policy, onSave, onDelete, onCancel }) => {
             <option value="interactive">Interactive</option>
             <option value="block">Block</option>
             <option value="log">Log Only</option>
-          </select>
-        </div>
+          </Form.Select>
+        </Form.Group>
         
-        <div className="form-group checkbox">
-          <input
+        <Form.Group className="mb-3">
+          <Form.Check
             type="checkbox"
             id="policyEnabled"
             name="enabled"
+            label="Enabled"
             checked={formData.enabled}
             onChange={handleChange}
           />
-          <label htmlFor="policyEnabled">Enabled</label>
-        </div>
-        
-        {/* Conditional UI for paste protection */}
-        {formData.policyType === 'pasteProtection' && (
-          <div className="pattern-list">
-            <h4>Enabled Patterns</h4>
-            <div className="patterns">
-              {/* Here you would render checkboxes for all available patterns */}
-              {/* This is a placeholder example */}
-              <div className="pattern-item">
-                <input
-                  type="checkbox"
-                  id="pattern-ssn"
-                  checked={selectedPatterns.includes('SSN')}
-                  onChange={() => handlePatternToggle('SSN')}
-                />
-                <label htmlFor="pattern-ssn">Social Security Number (SSN)</label>
-              </div>
-              <div className="pattern-item">
-                <input
-                  type="checkbox"
-                  id="pattern-cc"
-                  checked={selectedPatterns.includes('CreditCard')}
-                  onChange={() => handlePatternToggle('CreditCard')}
-                />
-                <label htmlFor="pattern-cc">Credit Card Number</label>
-              </div>
-              {/* Add more patterns here */}
-            </div>
-          </div>
-        )}
-        
-        {/* Conditional UI for file policies */}
-        {(formData.policyType === 'fileUploadProtection' || 
-          formData.policyType === 'fileDownloadProtection') && (
-          <div className="extension-list">
-            <h4>Blocked File Extensions</h4>
-            {extensions.map((ext, index) => (
-              <div key={index} className="extension-row">
-                <input
-                  type="text"
-                  value={ext}
-                  onChange={(e) => handleExtensionChange(index, e.target.value)}
-                  placeholder="File extension (e.g., pdf)"
-                />
-                <button 
-                  type="button" 
-                  className="remove-extension"
-                  onClick={() => handleRemoveExtension(index)}
-                >
-                  X
-                </button>
-              </div>
-            ))}
-            <button 
-              type="button" 
-              className="add-extension"
-              onClick={handleAddExtension}
-            >
-              + Add Extension
-            </button>
-          </div>
-        )}
+        </Form.Group>
         
         <div className="form-actions">
-          <button type="submit" className="save-button">Save</button>
+          <Button 
+            variant="primary" 
+            type="submit"
+          >
+            Save
+          </Button>
+          
           {policy.policyId && (
-            <button 
+            <Button 
+              variant="danger"
               type="button" 
-              className="delete-button" 
-              onClick={onDelete}
+              onClick={() => onDelete(policy.policyId)}
             >
               Delete
-            </button>
+            </Button>
           )}
-          <button 
+          
+          <Button 
+            variant="secondary" 
             type="button" 
-            className="cancel-button" 
             onClick={onCancel}
           >
             Cancel
-          </button>
+          </Button>
         </div>
-      </form>
+      </Form>
     </div>
   );
 };

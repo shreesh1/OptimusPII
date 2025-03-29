@@ -1,9 +1,23 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import App from './App';
-import './options.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-console.log('React script loaded - basic test');
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+// Make sure the DOM is fully loaded before attempting to render
+document.addEventListener('DOMContentLoaded', () => {
+  const container = document.getElementById('app');
+  
+  // Check if the container exists
+  if (!container) {
+    console.error('Cannot find #app element to mount React application');
+    return;
+  }
+  
+  // Create root and render
+  const root = createRoot(container);
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+});

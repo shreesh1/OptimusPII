@@ -1,0 +1,161 @@
+.policy-editor {
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 20px;
+    margin-top: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 16px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  
+  .form-group input[type="text"],
+  .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+  }
+  
+  .form-group input[type="text"]:focus,
+  .form-group select:focus {
+    border-color: #0078d7;
+    outline: none;
+  }
+  
+  .form-group.checkbox {
+    display: flex;
+    align-items: center;
+  }
+  
+  .form-group.checkbox input {
+    margin-right: 8px;
+  }
+  
+  .form-group.checkbox label {
+    margin-bottom: 0;
+  }
+  
+  .pattern-list,
+  .extension-list {
+    margin-top: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 15px;
+  }
+  
+  .pattern-list h4,
+  .extension-list h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+  }
+  
+  .pattern-item {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .pattern-item input[type="checkbox"] {
+    margin-right: 8px;
+  }
+  
+  .extension-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  
+  .extension-row input {
+    flex-grow: 1;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .remove-extension {
+    padding: 6px 12px;
+    background-color: #f5f5f5;
+    color: #666;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .remove-extension:hover {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .add-extension {
+    padding: 8px 15px;
+    background-color: #e8f5e9;
+    border: 1px solid #c8e6c9;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #2e7d32;
+    margin-top: 10px;
+  }
+  
+  .add-extension:hover {
+    background-color: #c8e6c9;
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  .save-button, 
+  .delete-button, 
+  .cancel-button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .save-button {
+    background-color: #0078d7;
+    color: white;
+  }
+  
+  .save-button:hover {
+    background-color: #0069c0;
+  }
+  
+  .delete-button {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .delete-button:hover {
+    background-color: #d32f2f;
+  }
+  
+  .cancel-button {
+    background-color: #f5f5f5;
+    color: #333;
+  }
+  
+  .cancel-button:hover {
+    background-color: #e0e0e0;
+  }

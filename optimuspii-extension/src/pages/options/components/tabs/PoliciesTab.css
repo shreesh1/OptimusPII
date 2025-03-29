@@ -1,0 +1,98 @@
+.policies-tab {
+  padding: 0 10px;
+}
+
+.policies-tab h2 {
+  margin-bottom: 20px;
+}
+
+.policies-list {
+  margin-bottom: 20px;
+}
+
+.policy-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.policy-item:hover {
+  background-color: #f5f5f5;
+}
+
+.policy-item:last-child {
+  border-bottom: none;
+}
+
+.policy-toggle {
+  margin-right: 15px;
+}
+
+.policy-details {
+  flex-grow: 1;
+}
+
+.policy-name {
+  font-weight: 500;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.policy-id {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.policy-description {
+  font-size: 14px;
+  color: #444;
+}
+
+.policy-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-button {
+  padding: 6px 12px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #444;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.edit-button:hover {
+  background-color: #e0e0e0;
+}
+
+.create-policy-button {
+  padding: 10px 15px;
+  background-color: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 15px;
+  color: #2e7d32;
+  display: block;
+  margin-top: 20px;
+  transition: background-color 0.2s;
+}
+
+.create-policy-button:hover {
+  background-color: #c8e6c9;
+}
+
+.empty-list-message {
+  padding: 30px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}

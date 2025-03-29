@@ -33,7 +33,7 @@
     }
   ],
   "options_ui": {
-    "page": "options/options.html",
+    "page": "options.html",
     "open_in_tab": true
   },
   "background": {
@@ -46,7 +46,7 @@
       "32": "icon/icon.min.png"
     },
     "default_title": "OptimusPII",
-    "default_popup": "options/options.html"
+    "default_popup": "options.html"
   },
   "browser_specific_settings": {
     "gecko": {

@@ -1,5 +1,6 @@
 const path = require("path");
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = (env, argv) => {
     const browser = env.browser || 'chromium';
@@ -7,6 +8,7 @@ module.exports = (env, argv) => {
         entry: {
             background: './src/background/background.js',
             content: './src/content/content.js',
+            options: './src/pages/options/index.jsx',
         },
         output: {
             path: path.resolve(__dirname, "dist"),
@@ -24,14 +26,36 @@ module.exports = (env, argv) => {
         plugins: [
             new CopyWebpackPlugin({
                 patterns: [
-                    { from: 'assets/icons', to: "icon"}, 
-                    { from: `platform/${browser}/manifest.json` }, 
-                    { from: 'src/pages' }
+                    { from: 'assets/icons', to: "icon" },
+                    { from: `platform/${browser}/manifest.json` },
                 ],
             }),
+            new HtmlWebpackPlugin({
+                template: './src/pages/options/options.html',
+                filename: 'options.html',
+                chunks: ['options'],
+                cache: false,
+              }),
         ],
         module: {
             rules: [
+                {
+                    test: /\.(js|jsx)$/,
+                    exclude: /node_modules/,
+                    use: {
+                        loader: 'babel-loader',
+                        options: {
+                            presets: [
+                                '@babel/preset-env', 
+                                ['@babel/preset-react', { 'runtime': 'automatic' }]
+                            ]
+                        }
+                    }
+                },
+                {
+                    test: /\.css$/,
+                    use: ['style-loader', 'css-loader']
+                },
                 {
                     test: /\.js$/,
                     exclude: /node_modules/,

@@ -15,8 +15,18 @@ import { createRedactedText } from '../services/detection.js';
  * @returns {boolean} Whether to allow the paste
  */
 export function handlePaste(event, controller) {
-  // Skip processing if monitoring is disabled
-  if (controller.config.mode === "disabled" || !controller.isMonitoringEnabled) return true;
+  // Get the active paste policy for this domain
+  const pastePolicy = controller.activePolicies.pasteProtection;
+  
+  // Skip processing if no paste policy is active or monitoring is disabled
+  if (!pastePolicy || !controller.isMonitoringEnabled) return true;
+  
+  // Get policy configuration
+  const mode = pastePolicy.policyConfig.mode;
+  const enabledPatterns = pastePolicy.policyConfig.enabledPatterns || [];
+  
+  // Skip if policy is in disabled mode
+  if (mode === "disabled") return true;
   
   // Get pasted text
   const clipboardData = event.clipboardData || window.clipboardData;
@@ -25,20 +35,28 @@ export function handlePaste(event, controller) {
   const text = clipboardData.getData('text');
   if (!text) return true;
   
-  // Detect sensitive information
-  const result = detectSensitiveInformation(text, controller.config.regexPatterns);
+  // Filter regex patterns based on enabled patterns in policy
+  const filteredPatterns = {};
+  for (const patternObj of enabledPatterns) {
+    if (patternObj) {
+      filteredPatterns[patternObj.name] = patternObj
+    }
+  }
+  
+  // Detect sensitive information using filtered patterns
+  const result = detectSensitiveInformation(text, filteredPatterns);
   
   // If no sensitive information found, allow paste
   if (Object.keys(result.patternMatches).length === 0) return true;
 
-   // Store sample data for use in the popup
-   const patternSamples = {};
-   for (const [name,_matchedItems] of Object.entries(result.patternMatches)) {
-     patternSamples[name] = controller.config.regexPatterns[name].sampleData || "REDACTED";
-   }
+  // Store sample data for use in the popup
+  const patternSamples = {};
+  for (const [name, _matchedItems] of Object.entries(result.patternMatches)) {
+    patternSamples[name] = filteredPatterns[name].sampleData || "REDACTED";
+  }
   
-  // Handle based on mode
-  switch (controller.config.mode) {
+  // Handle based on mode from policy
+  switch (mode) {
     case "interactive":
       // Store pending event for interactive handling
       controller.pendingPasteEvent = {
@@ -46,7 +64,8 @@ export function handlePaste(event, controller) {
         target: event.target,
         patternMatches: result.patternMatches,
         samples: patternSamples,
-        patternObjects: result.patternObjects
+        patternObjects: result.patternObjects,
+        policy: pastePolicy // Include the policy for reference in the popup
       };
       
       // Show popup
@@ -83,7 +102,7 @@ export function handlePaste(event, controller) {
       
     case "warn-only":
       // Allow paste but show notification
-      showNotification("Warning: Sensitive information detected in paste");
+      showNotification(`Warning: Sensitive information detected in paste (Policy: ${pastePolicy.policyName})`);
       return true;
       
     default:

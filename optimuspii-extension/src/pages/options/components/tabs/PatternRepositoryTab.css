@@ -1,0 +1,24 @@
+.pattern-repository-tab {
+    padding: 20px;
+  }
+  
+  .tab-description {
+    margin-bottom: 20px;
+    color: #555;
+  }
+  
+  .patterns-section {
+    margin-bottom: 30px;
+  }
+  
+  .patterns-section h3 {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #333;
+  }
+  
+  .patterns-section p {
+    margin-bottom: 15px;
+    font-size: 0.9em;
+    color: #555;
+  }

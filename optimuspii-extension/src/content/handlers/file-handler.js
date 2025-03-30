@@ -50,34 +50,45 @@ function handleFileUploadWrapper(event) {
  * @returns {boolean} Whether to allow the upload
  */
 export function handleFileUpload(event, controller) {
-  // Skip processing if monitoring is disabled
-  if (controller.config.mode === "disabled" || !controller.isMonitoringEnabled) return true;
+  // Get the active file upload policy for this domain
+  const fileUploadPolicy = controller.activePolicies.fileUploadProtection;
+
+  // Skip processing if no file upload policy is active or monitoring is disabled
+  if (!fileUploadPolicy || !controller.isMonitoringEnabled) return true;
+
+  // Get policy configuration
+  const mode = fileUploadPolicy.policyConfig.mode;
+  const blockedExtensions = fileUploadPolicy.policyConfig.blockedExtensions || [];
+
+  // Skip if policy is in disabled mode
+  if (mode === "disabled") return true;
 
   const fileInput = event.currentTarget;
 
   if (fileInput.files && fileInput.files.length > 0) {
-    const blockedFiles = checkForBlockedFileTypes(fileInput.files, controller.config.blockFileTypes);
+    const blockedFiles = checkForBlockedFileTypes(fileInput.files, blockedExtensions);
 
     // If there are blocked files
     if (blockedFiles.length > 0) {
       // Save the original files for alert-only mode
       const originalFiles = Array.from(fileInput.files);
 
-      // Handle based on mode
-      switch (controller.config.mode) {
+      // Handle based on mode from policy
+      switch (mode) {
         case "interactive":
-          showBlockedFilePopup(fileInput, blockedFiles, originalFiles, controller);
+          // Include the policy for reference in the popup
+          showBlockedFilePopup(fileInput, blockedFiles, originalFiles, controller, fileUploadPolicy);
           break;
 
         case "block-and-alert":
           event.preventDefault();
           event.stopPropagation();
           fileInput.value = '';
-          showNotification("File upload blocked: Sensitive file types detected");
+          showNotification(`File upload blocked: Sensitive file types detected (Policy: ${fileUploadPolicy.policyName})`);
           break;
 
         case "alert-only":
-          showNotification(`Warning: Uploading sensitive file types: ${blockedFiles.join(", ")}`);
+          showNotification(`Warning: Uploading sensitive file types: ${blockedFiles.join(", ")} (Policy: ${fileUploadPolicy.policyName})`);
           // Don't prevent default - let the upload continue
           return true;
 
@@ -88,7 +99,7 @@ export function handleFileUpload(event, controller) {
           break;
 
         case "warn-only":
-          showNotification("Warning: Potentially sensitive file types detected");
+          showNotification(`Warning: Potentially sensitive file types detected (Policy: ${fileUploadPolicy.policyName})`);
           break;
 
         default:

@@ -37,9 +37,9 @@ export function handlePaste(event, controller) {
   
   // Filter regex patterns based on enabled patterns in policy
   const filteredPatterns = {};
-  for (const patternName of enabledPatterns) {
-    if (controller.regexPatterns[patternName]) {
-      filteredPatterns[patternName] = controller.regexPatterns[patternName];
+  for (const patternObj of enabledPatterns) {
+    if (patternObj) {
+      filteredPatterns[patternObj.name] = patternObj
     }
   }
   

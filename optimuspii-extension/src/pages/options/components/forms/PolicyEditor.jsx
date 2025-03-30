@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Row, Col } from 'react-bootstrap';
+import { Form, Button, Row, Col, ListGroup } from 'react-bootstrap';
+import FileExtensionManager from '../utils/FileExtensionManager';
+import RegexPatternManager from '../utils/RegexPatternManager';
 import './PolicyEditor.css';
 
-const PolicyEditor = ({ policy, onSave, onDelete, onCancel }) => {
+const PolicyEditor = ({ policy, onSave, onDelete, onCancel, onChange }) => {
   const [formData, setFormData] = useState({ ...policy });
   const [selectedPatterns, setSelectedPatterns] = useState([]);
   const [extensions, setExtensions] = useState([]);
 
   useEffect(() => {
+    console.log('PolicyEditor policy:', policy);
     // Initialize selected patterns
     if (policy.policyConfig?.enabledPatterns) {
       setSelectedPatterns(policy.policyConfig.enabledPatterns);
     }
-    
+
     // Initialize extensions for file policies
     if (policy.policyConfig?.blockedExtensions) {
       setExtensions(policy.policyConfig.blockedExtensions);
@@ -38,92 +41,111 @@ const PolicyEditor = ({ policy, onSave, onDelete, onCancel }) => {
     }));
   };
 
+  const handlePatternsChange = (patternName) => {
+    setSelectedPatterns(patternName);
+    onChange();
+  };
+
+  const handleExtensionsChange = (newExtensions) => {
+    setExtensions(newExtensions);
+    onChange();
+  };
+
   const handleSubmit = (e) => {
+    console.log("handleSubmit called with formData:", formData);
     e.preventDefault();
-    onSave(formData);
+    
+    // Prepare final policy data
+    const updatedPolicy = {
+      ...formData,
+      policyConfig: {
+        ...formData.policyConfig,
+        enabledPatterns: selectedPatterns,
+        blockedExtensions: extensions
+      }
+    };
+    
+    onSave(updatedPolicy);
   };
 
   return (
     <div className="policy-editor">
       <h3>{policy.policyId ? 'Edit Policy' : 'Create New Policy'}</h3>
-      
       <Form onSubmit={handleSubmit}>
+        {/* Common fields like name, type, etc. */}
         <Form.Group className="mb-3">
-          <Form.Label htmlFor="policyName">Policy Name</Form.Label>
+          <Form.Label>Policy Name</Form.Label>
           <Form.Control
             type="text"
-            id="policyName"
-            name="name"
-            value={formData.name || ''}
+            name="policyName"
+            value={formData.policyName || ''}
             onChange={handleChange}
             required
           />
         </Form.Group>
         
         <Form.Group className="mb-3">
-          <Form.Label htmlFor="policyType">Type</Form.Label>
-          <Form.Select
-            id="policyType"
-            name="policyType"
-            value={formData.policyType}
+          <Form.Label>Policy Type</Form.Label>
+          <Form.Select 
+            name="policyType" 
+            value={formData.policyType || ''}
             onChange={handleChange}
-            disabled={!!policy.policyId}  // Disable changing type for existing policies
+            required
           >
+            <option value="">Select Policy Type</option>
             <option value="pasteProtection">Paste Protection</option>
             <option value="fileUploadProtection">File Upload Protection</option>
             <option value="fileDownloadProtection">File Download Protection</option>
           </Form.Select>
         </Form.Group>
         
-        <Form.Group className="mb-3">
-          <Form.Label htmlFor="policyMode">Mode</Form.Label>
-          <Form.Select
-            id="policyMode"
-            name="mode"
-            value={formData.policyConfig?.mode || 'interactive'}
-            onChange={handleConfigChange}
-          >
-            <option value="interactive">Interactive</option>
-            <option value="block">Block</option>
-            <option value="log">Log Only</option>
-          </Form.Select>
-        </Form.Group>
-        
-        <Form.Group className="mb-3">
-          <Form.Check
-            type="checkbox"
-            id="policyEnabled"
-            name="enabled"
-            label="Enabled"
-            checked={formData.enabled}
-            onChange={handleChange}
+        {/* Show the appropriate manager based on policy type */}
+        {formData.policyType === 'pasteProtection' && (
+          <RegexPatternManager
+            patterns={selectedPatterns}
+            onChange={handlePatternsChange}
           />
-        </Form.Group>
+        )}
         
-        <div className="form-actions">
-          <Button 
-            variant="primary" 
-            type="submit"
-          >
-            Save
-          </Button>
-          
+        {(formData.policyType === 'fileUploadProtection' || 
+          formData.policyType === 'fileDownloadProtection') && (
+          <FileExtensionManager
+            extensions={extensions}
+            onChange={handleExtensionsChange}
+          />
+        )}
+        
+        {/* Action buttons */}
+        <div className="d-flex justify-content-end mt-4">
           {policy.policyId && (
             <Button 
-              variant="danger"
-              type="button" 
-              onClick={() => onDelete(policy.policyId)}
+              variant="danger" 
+              className="me-2"
+              onClick={(e) => {
+                e.preventDefault();
+                onDelete(policy.policyId);
+              }}
+              type="button"
             >
               Delete
             </Button>
           )}
-          
           <Button 
             variant="secondary" 
-            type="button" 
-            onClick={onCancel}
+            className="me-2"
+            onClick={(e) => {
+              e.preventDefault();
+              onCancel();
+            }}
+            type="button"
           >
             Cancel
+          </Button>
+          <Button 
+            variant="primary" 
+            type="submit"
+          >
+            {policy.policyId ? 'Update' : 'Create'}
           </Button>
         </div>
       </Form>

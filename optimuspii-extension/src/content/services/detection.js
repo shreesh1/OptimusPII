@@ -12,7 +12,7 @@ export function detectSensitiveInformation(text, customPatterns = {}) {
   const patternObjects = {};
 
   // Process all enabled regex patterns
-  for (const [name, details] of Object.entries(customPatterns)) {
+  for (const [id, details] of Object.entries(customPatterns)) {
     // Skip disabled patterns
     if (!details.enabled) continue;
 
@@ -20,18 +20,18 @@ export function detectSensitiveInformation(text, customPatterns = {}) {
       // Create RegExp object from pattern string
       const patternMatch = details.pattern.match(/^\/(.*)\/([gimuy]*)$/);
       if (patternMatch) {
-        patternObjects[name] = new RegExp(patternMatch[1], patternMatch[2] + 'g'); // Add 'g' flag if missing
+        patternObjects[details.name] = new RegExp(patternMatch[1], patternMatch[2] + 'g'); // Add 'g' flag if missing
       } else {
-        patternObjects[name] = new RegExp(details.pattern, 'g');
+        patternObjects[details.name] = new RegExp(details.pattern, 'g');
       }
 
       // Find matches
-      const foundMatches = text.match(patternObjects[name]) || [];
+      const foundMatches = text.match(patternObjects[details.name]) || [];
       if (foundMatches.length > 0) {
-        patternMatches[name] = foundMatches;
+        patternMatches[details.name] = foundMatches;
       }
     } catch (error) {
-      console.error(`Error with regex pattern ${name}:`, error);
+      console.error(`Error with regex pattern ${details.name}:`, error);
     }
   }
 

@@ -12,52 +12,76 @@ class OptimusPIIBackground {
     
     // Default patterns and settings
     this.DEFAULT_REGEX_PATTERNS = {
-      "Email Address": {
+      "email-address": {
+        id:"email-address",
+        name: "Email Address",
         pattern: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g.source,
         enabled: true,
         isDefault: true,
-        sampleData: "example@redacted.com"
+        sampleData: "example@redacted.com",
+        isGlobal: true,
       },
-      "Credit Card Number": {
+      "credit-card-number": {
+        name:"Credit Card Number",
+        id:"credit-card-number",
         pattern: /(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|6(?:011|5[0-9]{2})[0-9]{12}|(?:2131|1800|35\d{3})\d{11}|(?:(?:5[0678]\d\d|6304|6390|67\d\d)\d{8,15}))([-\s]?[0-9]{4})?/g.source,
         enabled: true,
         isDefault: true,
+        isGlobal: true,
         sampleData: "4111-1111-1111-1111"
       },
-      "Phone Number": {
+      "phone-number": {
+        name: "Phone Number",
+        id:"phone-number",
         pattern: /(?:\+\d{1,3}[\s-]?)?\(?(?:\d{3,4})\)?[\s.-]?\d{3}[\s.-]?\d{3,4}/g.source,
         enabled: true,
         isDefault: true,
+        isGlobal: true,
         sampleData: "(555) 555-5555"
       },
-      "Social Security Number": {
+      "social-security-number": {
+        id:"social-security-number",
+        name:"Social Security Number",
         pattern: /\b(?!000|666|9\d{2})([0-8]\d{2}|7([0-6]\d|7[012]))([-\s]?)(?!00)\d\d\3(?!0000)\d{4}\b/g.source,
         enabled: true,
         isDefault: true,
+        isGlobal: true,
         sampleData: "123-45-6789"
       },
-      "Passport Number": {
+      "passport-number": {
+        id:"passport-number",
+        name:"Passport Number",
         pattern: /\b[A-Z]{1,2}[0-9]{6,9}\b/g.source,
         enabled: true,
         isDefault: true,
+        isGlobal: true,
         sampleData: "A1234567"
       },
-      "Aadhaar Number": {
+      "aadhaar-number": {
+        id:"aadhaar-number",
+        name:"Aadhaar Number",
         pattern: /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g.source,
         enabled: true,
         isDefault: true,
+        isGlobal: true,
         sampleData: "1234 5678 9012"
       },
-      "PAN Card": {
+      "pan-card": {
+        id:"pan-card",
+        name:"PAN Card",
         pattern: /\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b/g.source,
         enabled: true,
         isDefault: true,
+        isGlobal: true,
         sampleData: "ABCDE1234F"
       },
-      "Password": {
+      "password": {
+        id:"password",
+        name:"Password",
         pattern: /\b(?=\S*[0-9])(?=\S*[a-z])(?=\S*[A-Z])(?=\S*[!@#$%^&*()_\-+={}[\]\\|:;'",.<>/?])\S{8,32}\b/g.source,
         enabled: true,
         isDefault: true,
+        isGlobal: true,
         sampleData: "P@ssw0rd123!"
       },
     };
@@ -83,7 +107,7 @@ class OptimusPIIBackground {
         enabled: true,
         policyConfig: {
           mode: "interactive",
-          enabledPatterns: Object.keys(this.DEFAULT_REGEX_PATTERNS)
+          enabledPatterns: Object.values(this.DEFAULT_REGEX_PATTERNS)
         }
       },
       "default-file-upload-policy": {

@@ -1,26 +1,107 @@
+/* Light theme - default */
+.light-theme {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --border-color: #dee2e6;
+  --accent-color: #0d6efd;
+  --tab-active-bg: #fff;
+  --tab-active-border: #dee2e6;
+  --tab-inactive-bg: #f8f9fa;
+  --danger-color: #dc3545;
+  --success-color: #28a745;
+}
+
+/* Dark theme */
+.dark-theme {
+  --bg-primary: #212529;
+  --bg-secondary: #343a40;
+  --text-primary: #f8f9fa;
+  --text-secondary: #adb5bd;
+  --border-color: #495057;
+  --accent-color: #007bff;
+  --tab-active-bg: #343a40;
+  --tab-active-border: #495057;
+  --tab-inactive-bg: #212529;
+  --danger-color: #dc3545;
+  --success-color: #28a745;
+}
+
+/* Apply theme variables */
 .options-page {
-  padding: 20px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
 }
 
 .header {
-  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+  padding: 1rem 0;
 }
 
-.main-content {
-  margin-bottom: 30px;
+.header h1 {
+  color: var(--text-primary);
 }
 
 .footer {
-  border-top: 1px solid #dee2e6;
-  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+  margin-top: 1.5rem;
+  padding: 1rem 0;
 }
 
+/* Tab navigation styling */
+.nav-tabs .nav-link {
+  color: var(--text-secondary);
+  background-color: var(--tab-inactive-bg);
+  border-color: var(--border-color);
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--text-primary);
+  background-color: var(--tab-active-bg);
+  border-color: var(--tab-active-border);
+  border-bottom-color: transparent;
+}
+
+/* Card styling */
+.card {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.card-header {
+  background-color: var(--bg-secondary);
+  border-bottom-color: var(--border-color);
+}
+
+/* Form styling */
+.form-control, .form-select {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Theme toggle styling */
+.theme-toggle {
+  margin-left: 1rem;
+}
+
+.theme-toggle .form-check-input {
+  background-color: var(--accent-color);
+}
+
+/* Messages */
 .unsaved-changes-alert {
-  color: #dc3545;
-  font-weight: 500;
+  color: var(--danger-color);
 }
 
 .save-success-message {
-  color: #198754;
-  font-weight: 500;
+  color: var(--success-color);
 }

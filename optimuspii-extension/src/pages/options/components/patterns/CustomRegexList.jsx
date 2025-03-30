@@ -1,19 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, Button, Form, Row, Col } from 'react-bootstrap';
 import RegexToggleSwitch from './RegexToggleSwitch';
 import './RegexList.css';
 
-const CustomRegexList = ({ patterns, onChange, onDeletePattern }) => {
+const CustomRegexList = ({ patterns = {}, onChange, onDeletePattern, onAddPattern  }) => {
+  const [isPatternModalOpen, setIsPatternModalOpen] = useState(false);
+  const [currentEditPattern, setCurrentEditPattern] = useState(null);
+
   const handleAddPattern = () => {
-    const name = `Custom_${Date.now()}`;
-    onChange({
-      [name]: {
-        pattern: '',
-        enabled: true,
-        isDefault: false,
-        sampleData: 'REDACTED'
-      }
-    });
+    if (onAddPattern) {
+      onAddPattern();
+    }
+  };
+
+  const handlePatternModalSave = (editedPattern) => {
+    // Only save when pattern is confirmed in modal
+    if (editedPattern) {
+      const patternObj = {
+        [editedPattern.name]: {
+          pattern: editedPattern.pattern,
+          enabled: editedPattern.enabled,
+          isDefault: editedPattern.isDefault,
+          sampleData: editedPattern.sampleData
+        }
+      };
+      handleCustomPatternChange(patternObj);
+    }
+    setIsPatternModalOpen(false);
+  };
+
+  const handlePatternModalCancel = () => {
+    setIsPatternModalOpen(false);
+    setCurrentEditPattern(null);
   };
 
   const handleTogglePattern = (name, enabled) => {

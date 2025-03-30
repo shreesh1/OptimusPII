@@ -34,25 +34,35 @@ export class StorageService {
    * @param {string} policyType - The type of policy to create
    * @returns {Object} The new policy
    */
-  static createNewPolicy(policyType) {
+  static async createNewPolicy(policyType) {
     const policyId = 'policy_' + Date.now();
     const defaultPolicyNames = {
       'pasteProtection': 'Paste Protection',
       'fileUploadProtection': 'File Upload Protection',
       'fileDownloadProtection': 'File Download Protection'
     };
-    // Default file extensions to block for file policies
-    const defaultBlockedExtensions = policyType.includes('file') ?
-      ['exe', 'dll', 'bat', 'cmd', 'msi', 'ps1', 'sh'] : [];
+    
+    
+    const defaultBlockedExtensions = await this.getFileExtensionRepository();
+
+    // Get patterns asynchronously
+    let patternRepository = {};
+    try {
+      const storageData = await chrome.storage.local.get(['regexPatterns']);
+      if (storageData && storageData.regexPatterns) {
+        patternRepository = storageData.regexPatterns;
+      }
+    } catch (error) {
+      console.error('Failed to get pattern repository:', error);
+    }
 
     return {
       policyId: policyId,
-      policyName: defaultPolicyNames[policyType] || 'New Policy',
       policyType: policyType,
       enabled: true,
       policyConfig: {
         mode: 'interactive',
-        enabledPatterns: [],
+        enabledPatterns: policyType === 'pasteProtection' ? Object.values(patternRepository) : [],
         blockedExtensions: defaultBlockedExtensions
       }
     };
@@ -97,7 +107,7 @@ export class StorageService {
   }
 
   /**
-   * Saves a domain mapping to storage
+   * Saves a domain mapping to storage and registers content scripts
    * @param {Object} mapping - The domain mapping to save
    * @param {Array} allDomainMappings - All existing domain mappings
    * @returns {Promise} A promise that resolves with updated mappings
@@ -113,11 +123,16 @@ export class StorageService {
     }
 
     await chrome.storage.local.set({ domainMappings: mappings });
+
+    // Extract domain patterns and register content scripts
+    const contentUrls = mappings.map(m => m.domainPattern);
+    await window.OptimusPII.registerContentScriptsForUrls(contentUrls);
+
     return mappings;
   }
 
   /**
-   * Deletes a domain mapping from storage
+   * Deletes a domain mapping from storage and updates content scripts
    * @param {string} domainPattern - The domain pattern to delete
    * @param {Array} allDomainMappings - All existing domain mappings
    * @returns {Promise} A promise that resolves with updated mappings
@@ -125,30 +140,97 @@ export class StorageService {
   static async deleteDomainMapping(domainPattern, allDomainMappings) {
     const updatedMappings = allDomainMappings.filter(m => m.domainPattern !== domainPattern);
     await chrome.storage.local.set({ domainMappings: updatedMappings });
+
+    const contentUrls = updatedMappings.map(m => m.domainPattern);
+    await window.OptimusPII.registerContentScriptsForUrls(contentUrls);
+
     return updatedMappings;
   }
 
   /**
    * Saves pattern repository to storage
-   * @param {Object} patternRepository - The pattern repository to save
+   * @param {Object} pattern - The pattern to save
+   * @param {Object} allPatterns - All existing patterns
    * @returns {Promise} A promise that resolves when saved
    */
-  static async savePatternRepository(patternRepository) {
-    return chrome.storage.local.set({ regexPatterns: patternRepository });
+  static async savePatternRepository(pattern, allPatterns) {
+    console.log('Saving pattern:', pattern);
+    console.log('All patterns:', allPatterns);
+
+    // All Patterns is an object, so instead of using a find index we can just check if the pattern name exists in the object
+
+    const existingPattern = allPatterns[pattern.name];
+
+    console.log('Saving pattern:', pattern);
+
+    if (existingPattern == null) {
+      if (!pattern.hasOwnProperty('isGlobal')) {
+        pattern.isGlobal = true;
+      }
+      allPatterns[pattern.name] = pattern;
+    } else {
+      // Preserve isGlobal flag from existing pattern if not explicitly set
+      if (!pattern.hasOwnProperty('isGlobal') && existingPattern.hasOwnProperty('isGlobal')) {
+        pattern.isGlobal = existingPattern.isGlobal;
+      }
+      allPatterns[pattern.name] = pattern;
+    }
+
+    console.log('Updated patterns:', allPatterns);
+    await chrome.storage.local.set({ regexPatterns: allPatterns });
+    return allPatterns;
+  }
+
+  /**
+   * Deletes a pattern from storage
+   * @param {string} patternName - The pattern name to delete
+   * @returns {Promise<Object>} A promise that resolves to updated patterns
+   */
+  static async deletePattern(patternName) {
+    const allPatterns = await this.getPatternRepository();
+
+    if (allPatterns[patternName]) {
+      delete allPatterns[patternName];
+    }
+
+    await chrome.storage.local.set({ regexPatterns: allPatterns });
+    return allPatterns;
+  }
+
+  /**
+   * Gets user theme preference from storage
+   * @returns {Promise<string>} A promise that resolves to theme ('light' or 'dark')
+   */
+  static async getThemePreference() {
+    const result = await chrome.storage.local.get(['themePreference']);
+    return result.themePreference || 'light';
+  }
+
+  /**
+   * Saves user theme preference to storage
+   * @param {string} theme - The theme preference ('light' or 'dark')
+   * @returns {Promise} A promise that resolves when saved
+   */
+  static async saveThemePreference(theme) {
+    return chrome.storage.local.set({ themePreference: theme });
   }
 
   static async loadOptions() {
     try {
-      const [policies, domainMappings, patterns] = await Promise.all([
+      const [policies, domainMappings, patterns, themePreference, fileExtensions] = await Promise.all([
         this.getAllPolicies(),
         this.getAllDomainMappings(),
-        this.getPatternRepository()
+        this.getPatternRepository(),
+        this.getThemePreference(),
+        this.getFileExtensionRepository()
       ]);
 
       return {
         policies,
         domainMappings,
-        patterns
+        patterns,
+        themePreference,
+        fileExtensions
       };
     } catch (error) {
       console.error('Error loading options:', error);
@@ -156,19 +238,41 @@ export class StorageService {
     }
   }
 
-  // Add this method to your StorageService class
-  static async saveAllOptions({ policies, domainMappings, patterns }) {
+  // Updated to include theme preference
+  static async saveAllOptions({ policies, domainMappings, patterns, themePreference }) {
     try {
       await chrome.storage.local.set({
         policies,
         domainMappings,
-        regexPatterns: patterns
+        regexPatterns: patterns,
+        themePreference
       });
       return true;
     } catch (error) {
       console.error('Error saving options:', error);
       throw error;
     }
+  }
+
+  /**
+ * Save file extension repository to storage
+ * @param {Array} extensions - Array of file extensions to save
+ * @returns {Promise} A promise that resolves when saved
+ */
+  static async saveFileExtensionRepository(extensions) {
+    console.log('Saving file extensions:', extensions);
+
+    await chrome.storage.local.set({ blockFileTypes: extensions });
+    return extensions;
+  }
+
+  /**
+   * Get file extension repository from storage
+   * @returns {Promise<Array>} A promise that resolves with the file extensions
+   */
+  static async getFileExtensionRepository() {
+    const result = await chrome.storage.local.get('blockFileTypes');
+    return result.blockFileTypes || [];
   }
 
 }

@@ -1,78 +1,58 @@
 import React, { useState, useEffect } from 'react';
-import { Tabs, Tab, Card, Button } from 'react-bootstrap';
+import { Card, Alert } from 'react-bootstrap';
 import { StorageService } from '../../services/StorageService';
-import DefaultRegexList from '../patterns/DefaultRegexList';
-import CustomRegexList from '../patterns/CustomRegexList';
+import RegexPatternManager from '../utils/RegexPatternManager';
 import ConfirmModal from '../ConfirmModal';
 import './PatternRepositoryTab.css';
 
 const PatternRepositoryTab = ({ patterns, setPatterns, onChange }) => {
-  const [defaultPatterns, setDefaultPatterns] = useState({});
-  const [customPatterns, setCustomPatterns] = useState({});
+  const [patternArray, setPatternArray] = useState([]);
   const [patternToDelete, setPatternToDelete] = useState(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-  const [tabKey, setTabKey] = useState('default');
   
+  // Transform the patterns object to array format expected by RegexPatternManager
   useEffect(() => {
-    console.log('PatternRepositoryTab patterns:', patterns);
     if (patterns) {
-      const defaults = {};
-      const customs = {};
-      
-      Object.entries(patterns).forEach(([name, pattern]) => {
-        if (pattern.isDefault) {
-          defaults[name] = pattern;
-        } else {
-          customs[name] = pattern;
-        }
-      });
-      
-      setDefaultPatterns(defaults);
-      setCustomPatterns(customs);
+      const patternsArray = Object.entries(patterns).map(([name, details]) => ({
+        id: name,
+        name: name,
+        pattern: details.pattern,
+        enabled: details.enabled !== false,
+        isDefault: details.isDefault || false,
+        isGlobal: details.isGlobal !== false,
+        sampleData: details.sampleData || ''
+      }));
+      setPatternArray(patternsArray);
     }
   }, [patterns]);
   
-  const handleDefaultPatternChange = async (updatedPattern) => {
+  const handlePatternChange = async (updatedPatternsArray) => {
     try {
-      const patternName = Object.keys(updatedPattern)[0];
-      const newPattern = updatedPattern[patternName];
-      
-      const updatedPatterns = await StorageService.savePattern(patternName, newPattern);
-      setPatterns(updatedPatterns);
-      onChange();
-    } catch (error) {
-      console.error('Error updating default pattern:', error);
-      alert(`Error: ${error.message}`);
-    }
-  };
-  
-  const handleCustomPatternChange = async (updatedPattern) => {
-    try {
-      const patternName = Object.keys(updatedPattern)[0];
-      const newPattern = updatedPattern[patternName];
-      
-      if (newPattern === null || newPattern === undefined) {
-        // This is a pattern rename operation
-        const oldPatternKey = patternName;
-        const newPatternKey = Object.keys(updatedPattern)[1];
-        
-        // Delete old key and add new one
-        const updatedPatterns = await StorageService.renamePattern(oldPatternKey, newPatternKey, updatedPattern[newPatternKey]);
-        setPatterns(updatedPatterns);
-      } else {
-        // This is a normal pattern update
-        const updatedPatterns = await StorageService.savePattern(patternName, newPattern);
-        setPatterns(updatedPatterns);
+      // Convert array back to object format for storage
+      const patternObject = {};
+      for (const pattern of updatedPatternsArray) {
+        patternObject[pattern.name] = {
+          name: pattern.name,
+          id: pattern.id,
+          pattern: pattern.pattern,
+          enabled: pattern.enabled,
+          isDefault: false,
+          isGlobal: true,
+          sampleData: pattern.sampleData
+        };
       }
+      
+      await StorageService.savePatternRepository({ ...patternObject }, patterns);
+      setPatterns(patternObject);
       onChange();
     } catch (error) {
-      console.error('Error updating custom pattern:', error);
+      console.error('Error updating patterns:', error);
       alert(`Error: ${error.message}`);
     }
   };
   
-  const handleDeletePattern = (name) => {
-    setPatternToDelete(name);
+  const handleDeletePattern = (pattern) => {
+    setPatternToDelete(pattern);
     setShowConfirmDelete(true);
   };
   
@@ -80,7 +60,7 @@ const PatternRepositoryTab = ({ patterns, setPatterns, onChange }) => {
     if (!patternToDelete) return;
     
     try {
-      const updatedPatterns = await StorageService.deletePattern(patternToDelete);
+      const updatedPatterns = await StorageService.deletePattern(patternToDelete.name);
       setPatterns(updatedPatterns);
       setShowConfirmDelete(false);
       setPatternToDelete(null);
@@ -91,65 +71,33 @@ const PatternRepositoryTab = ({ patterns, setPatterns, onChange }) => {
     }
   };
   
-  const resetDefaultPatterns = async () => {
-    if (window.confirm('Are you sure you want to reset all default patterns to their original state? Any customizations will be lost.')) {
-      try {
-        const updatedPatterns = await StorageService.resetDefaultPatterns();
-        setPatterns(updatedPatterns);
-        onChange();
-      } catch (error) {
-        console.error('Error resetting default patterns:', error);
-        alert(`Error: ${error.message}`);
-      }
-    }
-  };
-  
   return (
     <div className="pattern-repository-tab">
-      <h3>Pattern Repository</h3>
+      <h3>Global Pattern Repository</h3>
       <p className="text-muted">
-        Manage the patterns used to detect sensitive information.
+        Manage the patterns used to detect sensitive information globally across all policies.
       </p>
       
-      <Tabs
-        activeKey={tabKey}
-        onSelect={k => setTabKey(k)}
-        className="mb-3"
-      >
-        <Tab eventKey="default" title="Default Patterns">
-          <div className="default-patterns-tab">
-            <div className="d-flex justify-content-end mb-3">
-              <Button 
-                variant="outline-secondary"
-                onClick={resetDefaultPatterns}
-              >
-                Reset to Default
-              </Button>
-            </div>
-            
-            <DefaultRegexList
-              patterns={defaultPatterns}
-              defaultPatterns={defaultPatterns}
-              onChange={handleDefaultPatternChange}
-            />
-          </div>
-        </Tab>
-        
-        <Tab eventKey="custom" title="Custom Patterns">
-          <div className="custom-patterns-tab">
-            <CustomRegexList
-              patterns={customPatterns}
-              onChange={handleCustomPatternChange}
-              onDeletePattern={handleDeletePattern}
-            />
-          </div>
-        </Tab>
-      </Tabs>
+      <Card className="mb-4">
+        <Card.Body>
+          <Card.Title>Pattern Management</Card.Title>
+          <Alert variant="info">
+            Patterns marked as global will be available in all policies. Custom patterns can be created 
+            specifically for individual policies.
+          </Alert>
+          
+          <RegexPatternManager 
+            patterns={patternArray} 
+            onChange={handlePatternChange}
+            onDelete={handleDeletePattern}
+          />
+        </Card.Body>
+      </Card>
       
       <ConfirmModal
         isOpen={showConfirmDelete}
         title="Delete Pattern"
-        message={`Are you sure you want to delete the pattern "${patternToDelete}"? This action cannot be undone.`}
+        message={`Are you sure you want to delete the pattern "${patternToDelete?.name}"? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         onConfirm={confirmDeletePattern}

@@ -24,8 +24,9 @@ const DomainMappingsTab = ({ domainMappings, setDomainMappings, policies, onChan
   };
   
   const handleSaveMapping = async (mapping) => {
+    console.log('handleSaveMapping called with mapping:', mapping);
     try {
-      const updatedMappings = await StorageService.saveDomainMapping(mapping);
+      const updatedMappings = await StorageService.saveDomainMapping(mapping,domainMappings);
       setDomainMappings(updatedMappings);
       setShowEditor(false);
       setCurrentMapping(null);
@@ -44,7 +45,7 @@ const DomainMappingsTab = ({ domainMappings, setDomainMappings, policies, onChan
     if (!currentMapping?.domainPattern) return;
     
     try {
-      const updatedMappings = await StorageService.deleteDomainMapping(currentMapping.domainPattern);
+      const updatedMappings = await StorageService.deleteDomainMapping(currentMapping.domainPattern, domainMappings);
       setDomainMappings(updatedMappings);
       setShowConfirmDelete(false);
       setShowEditor(false);
@@ -62,7 +63,7 @@ const DomainMappingsTab = ({ domainMappings, setDomainMappings, policies, onChan
   };
   
   const getPolicyName = (policyId) => {
-    return policies[policyId]?.name || policyId;
+    return policies[policyId]?.policyName || policyId;
   };
   
   return (

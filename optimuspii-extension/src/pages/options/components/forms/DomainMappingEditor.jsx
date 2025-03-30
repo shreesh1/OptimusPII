@@ -66,7 +66,7 @@ const DomainMappingEditor = ({ mapping, policies, onSave, onDelete, onCancel }) 
                 <Form.Check
                   type="checkbox"
                   id={`policy-${id}`}
-                  label={policy.name}
+                  label={policy.policyName}
                   checked={formData.appliedPolicies.includes(id)}
                   onChange={() => handlePolicyToggle(id)}
                 />

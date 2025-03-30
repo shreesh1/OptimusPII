@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button, InputGroup } from 'react-bootstrap';
 
 export default function FileExtensionManager({ extensions = [], onChange }) {
   const [fileExtensions, setFileExtensions] = useState(extensions);
+
+  useEffect(() => {
+    console.log("FileExtensionManager mounted with extensions:", extensions);
+    if (extensions) {
+      setFileExtensions(extensions);
+    }
+  }, [extensions]);
 
   const addExtension = () => {
     setFileExtensions([...fileExtensions, '']);
@@ -27,24 +34,27 @@ export default function FileExtensionManager({ extensions = [], onChange }) {
       <h4>Blocked File Extensions</h4>
       <div className="extension-list mb-3">
         {fileExtensions.map((ext, index) => (
-          <InputGroup className="mb-2" key={index}>
+          <div key={index} className="extension-row">
             <Form.Control
               type="text"
               value={ext}
-              placeholder="File extension (e.g., pdf)"
               onChange={(e) => updateExtension(index, e.target.value)}
+              placeholder="File extension (without dot)"
             />
             <Button 
-              variant="outline-danger"
+              variant="outline-secondary" 
+              className="remove-extension" 
               onClick={() => removeExtension(index)}
             >
               X
             </Button>
-          </InputGroup>
+          </div>
         ))}
       </div>
+      
       <Button 
-        variant="outline-primary"
+        variant="success" 
+        className="add-extension" 
         onClick={addExtension}
       >
         + Add Extension

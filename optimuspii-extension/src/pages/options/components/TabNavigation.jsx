@@ -1,12 +1,12 @@
 import React from 'react';
 import { Nav } from 'react-bootstrap';
-import './TabNavigation.css'; // You may still keep some custom styling
+import './TabNavigation.css';
 
-const TabNavigation = ({ activeTab, onTabChange }) => {
+const TabNavigation = ({ activeTab, onTabChange, theme }) => {
   return (
-    <Nav variant="tabs" className="tab-navigation">
+    <Nav variant="tabs" className={`tab-navigation ${theme}-theme`}>
       <Nav.Item>
-        <Nav.Link 
+        <Nav.Link
           active={activeTab === 'policies'}
           onClick={() => onTabChange('policies')}
         >
@@ -14,7 +14,7 @@ const TabNavigation = ({ activeTab, onTabChange }) => {
         </Nav.Link>
       </Nav.Item>
       <Nav.Item>
-        <Nav.Link 
+        <Nav.Link
           active={activeTab === 'domain'}
           onClick={() => onTabChange('domain')}
         >
@@ -22,11 +22,11 @@ const TabNavigation = ({ activeTab, onTabChange }) => {
         </Nav.Link>
       </Nav.Item>
       <Nav.Item>
-        <Nav.Link 
+        <Nav.Link
           active={activeTab === 'pattern'}
           onClick={() => onTabChange('pattern')}
         >
-          Pattern Repository
+          Global Pattern Repository
         </Nav.Link>
       </Nav.Item>
     </Nav>

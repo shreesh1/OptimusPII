@@ -12,6 +12,10 @@ const GlobalSettingsTab = ({ globalSettings, setGlobalSettings, onChange }) => {
     if (feature === 'enableNotifications' && value === true) {
       // Call canNotify properly with await in an async function
       NotificationService.canNotify().then(canNotify => {
+        if (!canNotify) {
+          alert('Notifications cannot be enabled. Please check your browser settings.');
+          return;
+        }
       });
     }
     const updatedSettings = {

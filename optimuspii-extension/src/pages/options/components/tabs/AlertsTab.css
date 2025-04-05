@@ -1,0 +1,56 @@
+.alerts-tab {
+    padding: 0 10px;
+  }
+  
+  .alerts-list {
+    max-height: 600px;
+    overflow-y: auto;
+  }
+  
+  .alert-item {
+    padding: 15px;
+    border-left: 4px solid #dee2e6;
+  }
+  
+  .alert-item:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+  
+  .alert-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .alert-message {
+    font-size: 14px;
+    margin: 8px 0;
+  }
+  
+  .alert-details {
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px dashed #e9ecef;
+    font-size: 12px;
+    color: #6c757d;
+  }
+  
+  .alert-item[data-type="phishing"] {
+    border-left-color: #dc3545;
+  }
+  
+  .alert-item[data-type="network"] {
+    border-left-color: #ffc107;
+  }
+  
+  .alert-item[data-type="pii"] {
+    border-left-color: #17a2b8;
+  }
+  
+  .alert-item[data-type="file"] {
+    border-left-color: #343a40;
+  }
+  
+  .alert-filter {
+    width: 200px;
+  }

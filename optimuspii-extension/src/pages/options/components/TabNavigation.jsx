@@ -29,6 +29,30 @@ const TabNavigation = ({ activeTab, onTabChange, theme }) => {
           Global Pattern Repository
         </Nav.Link>
       </Nav.Item>
+      <Nav.Item>
+        <Nav.Link
+          active={activeTab === 'global'}
+          onClick={() => onTabChange('global')}
+        >
+          Global Settings
+        </Nav.Link>
+      </Nav.Item>
+      <Nav.Item>
+        <Nav.Link
+          active={activeTab === 'alerts'}
+          onClick={() => onTabChange('alerts')}
+        >
+          Alerts
+        </Nav.Link>
+      </Nav.Item>
+      <Nav.Item>
+        <Nav.Link
+          active={activeTab === 'logs'}
+          onClick={() => onTabChange('logs')}
+        >
+          Logs
+        </Nav.Link>
+      </Nav.Item>
     </Nav>
   );
 };

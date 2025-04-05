@@ -6,6 +6,10 @@ import TabNavigation from './components/TabNavigation';
 import PoliciesTab from './components/tabs/PoliciesTab';
 import DomainMappingsTab from './components/tabs/DomainMappingsTab';
 import PatternRepositoryTab from './components/tabs/PatternRepositoryTab';
+import GlobalSettingsTab from './components/tabs/GlobalSettingsTab';
+import AlertsTab from './components/tabs/AlertsTab';
+import LogsTab from './components/tabs/LogsTab';
+
 import { StorageService } from './services/StorageService';
 
 const App = () => {
@@ -13,6 +17,7 @@ const App = () => {
   const [policies, setPolicies] = useState({});
   const [domainMappings, setDomainMappings] = useState({});
   const [patterns, setPatterns] = useState({});
+  const [globalSettings, setGlobalSettings] = useState({});
   const [fileExtensions, setFileExtensions] = useState([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showSavedMessage, setShowSavedMessage] = useState(false);
@@ -29,6 +34,7 @@ const App = () => {
         setPatterns(data.patterns);
         setTheme(data.themePreference || 'light');
         setFileExtensions(data.fileExtensions || []);
+        setGlobalSettings(data.globalSettings || {});
         setHasUnsavedChanges(false);
       } catch (error) {
         console.error('Failed to load data:', error);
@@ -54,9 +60,10 @@ const App = () => {
         policies,
         domainMappings,
         patterns,
-        themePreference: theme
+        themePreference: theme,
+        globalSettings: globalSettings
       });
-
+      
       setHasUnsavedChanges(false);
       setShowSavedMessage(true);
       setTimeout(() => setShowSavedMessage(false), 3000);
@@ -112,6 +119,26 @@ const App = () => {
             onChange={handleDataChange}
           />
         )
+      case 'global':
+        return (
+          <GlobalSettingsTab
+            globalSettings={globalSettings}
+            setGlobalSettings={setGlobalSettings}
+            onChange={handleDataChange}
+          />
+        );
+      case 'alerts':
+        return (
+          <AlertsTab
+            globalSettings={globalSettings}
+          />
+        );
+      case 'logs':
+        return (
+          <LogsTab
+            globalSettings={globalSettings}
+          />
+        );
       default:
         return null;
     }

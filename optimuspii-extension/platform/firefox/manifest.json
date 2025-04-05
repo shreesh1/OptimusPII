@@ -14,7 +14,21 @@
     "activeTab",
     "contextMenus",
     "scripting",
-    "clipboardRead"
+    "clipboardRead",
+    "webNavigation",
+    "notifications"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "warning.html",
+        "assets/icons/icon.png",
+        "warning.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
   ],
   "host_permissions": [
     "*://*/*"
@@ -37,7 +51,9 @@
     "open_in_tab": true
   },
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [
+      "background.js"
+    ]
   },
   "action": {
     "default_icon": {

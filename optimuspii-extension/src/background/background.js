@@ -5,6 +5,10 @@
  * regex patterns, content script injection, and file extension blocking.
  */
 
+// Import the new services
+import { LoggingService } from '../pages/options/services/LoggingService';
+import { getPhishingDetection } from './networksecurity/phishingurldetection.js';
+
 class OptimusPIIBackground {
   constructor() {
     // Define browser API reference safely
@@ -92,6 +96,11 @@ class OptimusPIIBackground {
       '.cpp'
     ];
 
+    this.DEFAULT_GLOBAL_SETTINGS = {
+      phishingUrlDetection: 'block',
+      logLevel: 'info'
+    }
+
     // Default URLs for content script injection
     this.DEFAULT_URLS = [
       "https://chatgpt.com/*",
@@ -137,8 +146,11 @@ class OptimusPIIBackground {
         appliedPolicies: ["default-paste-policy", "default-file-upload-policy"]
       }
     ];
+
+    this.phishingDetection = getPhishingDetection();
     
     this.initializePolicies();
+
   }
 
   /**
@@ -158,10 +170,55 @@ class OptimusPIIBackground {
    * Initialize extension components
    */
   init() {
+    LoggingService.info('system', 'OptimusPII Extension background script initializing...');
     this.initializeRegexPatterns();
     this.initializeCustomUrls();
     this.initializeFileExtensions();
+    this.initializeGlobalSettings();
+    this.initializeEventListeners();
     this.exportFunctions();
+  }
+
+  initializeEventListeners() {
+    this.api.storage.onChanged.addListener((changes, area) => {
+      if (area === 'local' && changes.globalSettings) {
+        const newSettings = changes.globalSettings.newValue || {};
+        const oldSettings = changes.globalSettings.oldValue || {};
+        
+        // Update phishing detection settings if they've changed
+        if (newSettings.phishingUrlDetection !== oldSettings.phishingUrlDetection) {
+          this.phishingDetection.updateConfig({
+            mode: newSettings.phishingUrlDetection || 'disabled'
+          });
+          
+          LoggingService.info('system', `Updated phishing detection mode to: ${newSettings.phishingUrlDetection}`);
+        }
+      }
+    });
+  }
+
+  initializeGlobalSettings() {
+    this.api.storage.local.get(['globalSettings'])
+      .then(result => {
+        // If no global settings exist in storage, initialize with defaults
+        if (!result.globalSettings) {
+          this.api.storage.local.set({
+            globalSettings: this.DEFAULT_GLOBAL_SETTINGS
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Failed to initialize global settings:', error);
+      });
+
+      chrome.storage.local.get(['globalSettings'], (result) => {
+        const settings = result.globalSettings || {};
+        
+        // Configure phishing detection based on current settings
+        this.phishingDetection.updateConfig({
+          mode: settings.phishingUrlDetection || 'disabled'
+        });
+      });
   }
 
   /**
@@ -229,7 +286,6 @@ class OptimusPIIBackground {
    */
   async registerContentScriptsForUrls(urls) {
     
-    console.log('Registering content scripts for URLs:', urls);
 
     if (!urls || urls.length === 0) {
       console.warn('No URLs provided for content script registration');
@@ -245,7 +301,6 @@ class OptimusPIIBackground {
         runAt: "document_start",
         allFrames: true
       }]);
-      console.log('Content scripts registered successfully');
     }
     catch (error) {
       await this._handleContentScriptRegistrationError(error, urls);
@@ -279,7 +334,6 @@ class OptimusPIIBackground {
           runAt: "document_start",
           allFrames: true
         }]);
-        console.log('Content scripts updated successfully');
       }
       catch (updateError) {
         await this._handleContentScriptUpdateError(urls);
@@ -305,7 +359,6 @@ class OptimusPIIBackground {
         runAt: "document_start",
         allFrames: true
       }]);
-      console.log('Content scripts unregistered and re-registered successfully');
     }
     catch (finalError) {
       if (finalError.message && finalError.message.includes("does not exist")) {
@@ -332,7 +385,6 @@ class OptimusPIIBackground {
         runAt: "document_start",
         allFrames: true
       }]);
-      console.log('All content scripts cleared and re-registered successfully');
     }
     catch (lastError) {
       console.error('Failed to clear and re-register content scripts:', lastError.message);
@@ -351,7 +403,6 @@ class OptimusPIIBackground {
         const matchingTabs = await this.api.tabs.query({ url: queryPattern });
 
         if (matchingTabs.length) {
-          console.log(`Found ${matchingTabs.length} matching tabs for pattern ${queryPattern}`);
           
           for (const tab of matchingTabs) {
             try {
@@ -359,14 +410,11 @@ class OptimusPIIBackground {
                 target: { tabId: tab.id, allFrames: true },
                 files: ["../content.js"]
               });
-              console.log(`Content script injected into tab ${tab.id}`);
-              console.log(output);
             } catch (tabError) {
               console.error(`Failed to inject script into tab ${tab.id}:`, tabError.message);
             }
           }
         } else {
-          console.log(`No matching tabs found for pattern ${queryPattern}`);
         }
       }
     } catch (queryError) {
@@ -395,8 +443,6 @@ class OptimusPIIBackground {
       // Only set default values if they don't already exist
       const updates = {};
       
-      console.log(result);
-
       if (!result.policies) {
         updates.policies = this.DEFAULT_POLICIES;
       }
@@ -404,8 +450,6 @@ class OptimusPIIBackground {
       if (!result.domainMappings) {
         updates.domainMappings = this.DEFAULT_DOMAIN_MAPPINGS;
       }
-
-      console.log(updates);
       
       if (Object.keys(updates).length > 0) {
         chrome.storage.local.set(updates);
@@ -487,8 +531,46 @@ class OptimusPIIBackground {
     const parts = filename.split('.');
     return parts.length > 1 ? parts.pop() : '';
   }
+
+  setupBackgroundNotifications() {
+    // Listen for notification requests from content or options pages
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.type === 'show-notification') {
+        
+        console.log("Received notification request:", message);
+
+        const { title, message: body, options } = message;
+        
+        const notification = chrome.notifications.create({
+          type: 'basic',
+          iconUrl: options.icon || '/assets/icons/icon-48.png',
+          title: title,
+          message: body,
+          priority: options.priority || 0,
+          requireInteraction: options.requireInteraction || false
+        });
+        
+        // Send response with notification ID
+        sendResponse({ success: true, notificationId: notification });
+        return true; // Indicates async response
+      }
+      return false;
+    });
+    
+    // Handle notification clicks
+    chrome.notifications.onClicked.addListener((notificationId) => {
+      // Extract info from notification ID or store notification data
+      // Open relevant extension page
+      chrome.runtime.openOptionsPage();
+      
+      // Close the notification
+      chrome.notifications.clear(notificationId);
+    });
+  }
 }
 
 // Initialize the extension
 const optimusPII = new OptimusPIIBackground();
 optimusPII.init();
+
+

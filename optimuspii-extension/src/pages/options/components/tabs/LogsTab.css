@@ -1,0 +1,59 @@
+.logs-tab {
+    padding: 0 10px;
+  }
+  
+  .logs-table-container {
+    max-height: 600px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+  }
+  
+  .logs-table-container table {
+    margin-bottom: 0;
+  }
+  
+  .log-timestamp {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  
+  .log-level {
+    text-align: center;
+  }
+  
+  .log-category {
+    text-transform: capitalize;
+    font-size: 13px;
+  }
+  
+  .log-message {
+    font-family: monospace;
+    font-size: 13px;
+  }
+  
+  .log-details {
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px dashed #e9ecef;
+    font-size: 12px;
+    color: #6c757d;
+    white-space: pre-wrap;
+  }
+  
+  .search-input {
+    min-width: 200px;
+    max-width: 300px;
+  }
+  
+  .filter-select {
+    min-width: 140px;
+    max-width: 200px;
+  }
+  
+  @media (max-width: 768px) {
+    .search-input, .filter-select {
+      width: 100%;
+      max-width: none;
+    }
+  }

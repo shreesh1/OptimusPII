@@ -28,6 +28,8 @@ module.exports = (env, argv) => {
                 patterns: [
                     { from: 'assets/icons', to: "icon" },
                     { from: `platform/${browser}/manifest.json` },
+                    { from: `src/static-pages/warning.html`, to: 'warning.html'},
+                    {from: `src/static-pages/warning.js`, to: 'warning.js'},
                 ],
             }),
             new HtmlWebpackPlugin({

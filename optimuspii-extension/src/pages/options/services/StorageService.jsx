@@ -217,12 +217,13 @@ export class StorageService {
 
   static async loadOptions() {
     try {
-      const [policies, domainMappings, patterns, themePreference, fileExtensions] = await Promise.all([
+      const [policies, domainMappings, patterns, themePreference, fileExtensions, globalSettings] = await Promise.all([
         this.getAllPolicies(),
         this.getAllDomainMappings(),
         this.getPatternRepository(),
         this.getThemePreference(),
-        this.getFileExtensionRepository()
+        this.getFileExtensionRepository(),
+        this.getGlobalSettings()
       ]);
 
       return {
@@ -230,7 +231,8 @@ export class StorageService {
         domainMappings,
         patterns,
         themePreference,
-        fileExtensions
+        fileExtensions,
+        globalSettings
       };
     } catch (error) {
       console.error('Error loading options:', error);
@@ -239,13 +241,14 @@ export class StorageService {
   }
 
   // Updated to include theme preference
-  static async saveAllOptions({ policies, domainMappings, patterns, themePreference }) {
+  static async saveAllOptions({ policies, domainMappings, patterns, themePreference, globalSettings }) {
     try {
       await chrome.storage.local.set({
         policies,
         domainMappings,
         regexPatterns: patterns,
-        themePreference
+        themePreference,
+        globalSettings
       });
       return true;
     } catch (error) {
@@ -273,6 +276,11 @@ export class StorageService {
   static async getFileExtensionRepository() {
     const result = await chrome.storage.local.get('blockFileTypes');
     return result.blockFileTypes || [];
+  }
+
+  static async getGlobalSettings() {
+    const result = await chrome.storage.local.get('globalSettings');
+    return result.globalSettings || {};
   }
 
 }

@@ -14,7 +14,9 @@
     "activeTab",
     "contextMenus",
     "scripting",
-    "clipboardRead"
+    "clipboardRead",
+    "webNavigation",
+    "notifications"
   ],
   "host_permissions": [
     "*://*/*"

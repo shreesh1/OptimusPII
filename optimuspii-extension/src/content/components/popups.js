@@ -216,7 +216,7 @@ export function showInteractivePopup(controller) {
 
   // Add remaining text after last match
   if (lastIndex < controller.pendingPasteEvent.text.length) {
-    const textAfter = document.createTextNode(text.substring(lastIndex));
+    const textAfter = document.createTextNode(controller.pendingPasteEvent.text.substring(lastIndex));
     fragment.appendChild(textAfter);
   }
 

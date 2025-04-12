@@ -29,7 +29,7 @@ A comprehensive security extension that protects against leaking PII (Personally
 
 1. Interactive Module for Blocking or Allowing
 
-![image](https://github.com/user-attachments/assets/9da20097-a21c-44dc-b913-1d1f238ca1aa)
+![image](https://github.com/user-attachments/assets/a72b2bc6-d1ba-4e32-8da6-c23448f8ed5d)
 
 2. Notifications for other modes if paste is directly blocked or detected in alert mode
 
@@ -39,15 +39,48 @@ Block Mode
 
 Alert Mode
 
-![image](https://github.com/user-attachments/assets/228d4ac7-3526-4782-a4f2-b9169d670e20)
+![image](https://github.com/user-attachments/assets/94486d8b-62e6-4d46-a871-f472c0bf44be)
 
-3. Configuration changes from the options mode for blocking or interactive mode
+Redact & Paste
 
-![image](https://github.com/user-attachments/assets/31507e7c-449c-4871-bd29-0fdfe39419bb)
+![image](https://github.com/user-attachments/assets/fe8b5aaa-ab2a-4473-af72-61148d5bd713)
 
-![image](https://github.com/user-attachments/assets/370c8cd9-5d9d-4a90-8d30-272fe5bb14d9)
+3. Policy Based Configurations
 
-![image](https://github.com/user-attachments/assets/f6300c2a-946f-4e91-b874-1f6fe88ba0b0)
+![image](https://github.com/user-attachments/assets/b2e98e4a-8473-4f42-8ed3-86d8a129d8ab)
+
+![image](https://github.com/user-attachments/assets/9b2c5da5-44cf-4a78-bb82-9e7bbd129edb)
+
+![image](https://github.com/user-attachments/assets/d78dbedb-36a0-4d2b-a2d1-daaf320cae57)
+
+![image](https://github.com/user-attachments/assets/ac7bee1e-db49-4d2d-a801-55daa86b8595)
+
+![image](https://github.com/user-attachments/assets/8eb72ab9-a88f-47b5-a3bc-4e2e0ddbbfa0)
+
+4. Global Settings
+
+![image](https://github.com/user-attachments/assets/dd391e2b-5ca4-47df-8b8d-9aac8c29040b)
+
+5. Alerts Page
+
+![image](https://github.com/user-attachments/assets/46bf5b52-642b-49f4-a3a2-caa92b73232e)
+
+6. Logs Page
+
+![image](https://github.com/user-attachments/assets/8c4754d9-0886-4bae-97d6-c9b09a28d18d)
+
+7. Dark Mode
+
+![image](https://github.com/user-attachments/assets/08e227ea-a0a6-4bd8-beee-f6ff2b2de2b1)
+
+8. Phishing Warning Page
+
+![image](https://github.com/user-attachments/assets/68e12b21-0d7d-4f42-b10c-283e30385df3)
+
+9. Alert Notifications
+
+![image](https://github.com/user-attachments/assets/777d0ab1-a460-4dcb-90f0-027612c33f8a)
+
 
 ## How it works
 

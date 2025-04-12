@@ -1,54 +1,35 @@
 # OptimusPII
 
 <p align="center">
-  <img src="icon.png" alt="OptimusPII Logo" width="150" />
+  <img src="optimuspii-extension/assets/icons/icon.png" alt="OptimusPII Logo" width="150" />
 </p>
 
-A comprehensive browser extension that detects, blocks, and redacts Personally Identifiable Information (PII) before it's shared with web applications like ChatGPT, Claude, and others.
-
-## Project Architecture
-
-OptimusPII is designed as a modular system with several components:
-
-- **optimuspii-extension**: The main browser extension that runs in Chrome/Firefox
-- **optimuspii-messagingbin**: Messaging infrastructure for secure communications
-- **optimuspii-server**: Backend service for advanced detection capabilities 
-- **optimuspii-service**: Supporting services for enhanced functionality
+A comprehensive security extension that protects against leaking PII (Personally Identifiable Information) through advanced detection, blocking, and redaction capabilities in ChatGPT, Claude, and other web applications, with customizable policies, multi-mode operation, and robust security monitoring features.
 
 ## Features
 
-- **Real-time Detection**: Automatically scans clipboard content when pasting to detect PII
-- **File Upload Protection**: Prevents uploading sensitive file types containing potential PII
-- Detects and blocks email addresses in pasted content
-- Detects and blocks credit card numbers in pasted content
-- Detects and blocks phone numbers in various international formats
-- Detects and blocks Social Security Numbers (SSNs) in pasted content
-- Detects and blocks passport numbers in standard formats
-- Detects and blocks Aadhaar numbers (Indian ID)
-- Detects and blocks PAN card numbers (Indian tax ID)
-- Detects and blocks passwords with common security requirements
-- Support for custom regex patterns to detect additional types of sensitive information
-- Paste Redacted option - replace sensitive information with sample/redacted values
-- Customizable URL monitoring - specify which websites to monitor
-- Toggle individual detection patterns on/off
-- Customizable sample replacement text for each pattern
-- Multiple operational modes:
-  - Interactive: Shows a popup with highlighted sensitive information and asks for confirmation
-  - Block and Alert: Automatically blocks and shows a notification
-  - Alert Only: Allows paste but shows a warning
-  - Silent Block: Blocks paste without notifications
-  - Disabled: Turns off all detection
+- **Intelligent PII Detection**: Real-time scanning for various PII types (emails, credit cards, phone numbers, SSNs, passport numbers, Aadhaar numbers, PAN cards, passwords) with support for custom regex patterns
+- **Flexible Protection Options**: Multiple operational modes including interactive confirmation, automatic blocking, alert-only, silent blocking, and redaction capabilities
+- **Customizable Security**: Tailor protection with website-specific rules, custom replacement text, and configurable URL monitoring
+- **Policy Management**: Create, apply and manage domain-specific security policies through an intuitive interface
+- **Comprehensive Monitoring**: Track security events through alerts dashboard, detailed activity logs, and configurable notification system
+- **Network Security**: Detection and warning system for potentially malicious phishing URLs and other threats
+
+## Development Features
+
+- **Testing Framework**: Built-in tools to validate detection patterns and extension functionality
+- **Webpack Configuration**: Optimized build process for both development and production environments
+- **Component-Based Architecture**: OOP-based structure for content script allowing easier maintenance and future enhancements
+- **React UI Framework**: Modern React-based options page with component structure for better development experience
+- **Theme Support**: Built-in light and dark theme support with Bootstrap styling
+- **Hot Reloading**: Development environment with watch mode for faster development cycles
+- **Cross-Browser Compatibility**: Configurations for both Chrome and Firefox development
 
 ## Screenshots
 
-1. Interactive Module for Blocking or Allowing Pasting
+1. Interactive Module for Blocking or Allowing
 
-![image](https://github.com/user-attachments/assets/9da20097-a21c-44dc-b913-1d1f238ca1aa)
-
-2. Interactive Module for Blocking or Allowing File Upload
-
-![image](https://github.com/user-attachments/assets/49fc7954-98d3-41cb-b161-db37606f7d6a)
-
+![image](https://github.com/user-attachments/assets/a72b2bc6-d1ba-4e32-8da6-c23448f8ed5d)
 
 2. Notifications for other modes if paste is directly blocked or detected in alert mode
 
@@ -58,29 +39,52 @@ Block Mode
 
 Alert Mode
 
-![image](https://github.com/user-attachments/assets/228d4ac7-3526-4782-a4f2-b9169d670e20)
+![image](https://github.com/user-attachments/assets/94486d8b-62e6-4d46-a871-f472c0bf44be)
 
-3. Configuration changes from the options mode for blocking or interactive mode
+Redact & Paste
 
-![image](https://github.com/user-attachments/assets/31507e7c-449c-4871-bd29-0fdfe39419bb)
+![image](https://github.com/user-attachments/assets/fe8b5aaa-ab2a-4473-af72-61148d5bd713)
 
-![image](https://github.com/user-attachments/assets/6618fc0a-2a16-4446-b21f-dd0cffa9e906)
+3. Policy Based Configurations
 
-![image](https://github.com/user-attachments/assets/370c8cd9-5d9d-4a90-8d30-272fe5bb14d9)
+![image](https://github.com/user-attachments/assets/b2e98e4a-8473-4f42-8ed3-86d8a129d8ab)
 
-![image](https://github.com/user-attachments/assets/f6300c2a-946f-4e91-b874-1f6fe88ba0b0)
+![image](https://github.com/user-attachments/assets/9b2c5da5-44cf-4a78-bb82-9e7bbd129edb)
+
+![image](https://github.com/user-attachments/assets/d78dbedb-36a0-4d2b-a2d1-daaf320cae57)
+
+![image](https://github.com/user-attachments/assets/ac7bee1e-db49-4d2d-a801-55daa86b8595)
+
+![image](https://github.com/user-attachments/assets/8eb72ab9-a88f-47b5-a3bc-4e2e0ddbbfa0)
+
+4. Global Settings
+
+![image](https://github.com/user-attachments/assets/dd391e2b-5ca4-47df-8b8d-9aac8c29040b)
+
+5. Alerts Page
+
+![image](https://github.com/user-attachments/assets/46bf5b52-642b-49f4-a3a2-caa92b73232e)
+
+6. Logs Page
+
+![image](https://github.com/user-attachments/assets/8c4754d9-0886-4bae-97d6-c9b09a28d18d)
+
+7. Dark Mode
+
+![image](https://github.com/user-attachments/assets/08e227ea-a0a6-4bd8-beee-f6ff2b2de2b1)
+
+8. Phishing Warning Page
+
+![image](https://github.com/user-attachments/assets/68e12b21-0d7d-4f42-b10c-283e30385df3)
+
+9. Alert Notifications
+
+![image](https://github.com/user-attachments/assets/777d0ab1-a460-4dcb-90f0-027612c33f8a)
+
 
 ## How it works
 
-The extension monitors paste events and file uploads on web pages and checks for patterns that match known PII formats. When detected, it can block the operation and/or notify the user based on the selected operational mode.
-
-## Technical Implementation
-
-- **Content Scripts**: Monitor and intercept paste events and file uploads
-- **Background Service**: Manages configuration and cross-page coordination
-- **UI Components**: Provide interactive detection and configuration interfaces
-- **Detection Services**: Apply regular expression patterns to identify PII
-- **File Scanner**: Detects potentially sensitive file types
+The extension monitors paste events on web pages and checks for patterns that match known PII formats. When detected, it can block the paste operation and/or notify the user based on the selected operational mode.
 
 ## PII Detection Types
 
@@ -93,40 +97,22 @@ The extension monitors paste events and file uploads on web pages and checks for
 - **PAN Card**: Indian tax ID format
 - **Passwords**: Common password patterns with symbols, numbers, and mixed case
 - **Custom Patterns**: User-defined regex patterns for detecting specific types of sensitive information
+- **Phishing URLs**: Detection of potentially malicious URLs with configurable sensitivity levels
 
 ## Developer Installation
 
-### Chrome/Edge/Brave (Chromium)
-1. Clone the repository
-2. Run `npm install` in the optimuspii-extension directory
-3. Run `npm run build:chromium` to create a production build
-4. Go to `chrome://extensions/`
-5. Enable "Developer mode"
-6. Click "Load unpacked" and select the `optimuspii-extension/build/chromium` directory
+### Chrome/
+1. Download the source code
+2. Go to `chrome://extensions/` (Chrome)
+3. Enable "Developer mode"
+4. Click "Load unpacked"
+5. Select the extension folder ( If issues rename manifest_chrome.json to manifest.json )
 
 ### Firefox
-1. Clone the repository
-2. Run `npm install` in the optimuspii-extension directory
-3. Run `npm run build:firefox` to create a production build
-4. Go to `about:debugging#/runtime/this-firefox`
-5. Click "Load Temporary Add-on"
-6. Select the `manifest.json` file in the `optimuspii-extension/build/firefox` directory
-
-## Development
-
-### Local Development
-```sh
-# Install dependencies
-npm install
-
-# Start development build with auto-reload (choose your target browser)
-npm run dev:chrome
-# or
-npm run dev:firefox
-
-# Build production versions
-npm run build
-```
+1. Download the source code
+2. Go to `about:debugging#/runtime/this-firefox`
+3. Click "Load Temporary Add-on"
+4. Select the manifest_firefox.json file ( If issues rename manifest_firefox.json to manifest.json )
 
 ## Supported Websites
 
@@ -161,6 +147,12 @@ Access the extension options to customize how OptimusPII works:
    - Set sample replacement text for when using "Paste Redacted" option
    - Enable/disable patterns as needed
 
-## Contributing
+5. **Network Security Settings**: Configure protection against malicious content
+   - Adjust phishing URL detection sensitivity
+   - Control notification preferences for different security events
+   - Enable/disable specific security features
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+6. **Policy-Based Protection**: Manage policies to control security behaviors
+   - Create policies to define specific detection and blocking rules
+   - Apply policies to specific websites or domains
+   - Enable, disable, or customize policies through the options interface

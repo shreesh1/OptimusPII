@@ -74,7 +74,13 @@ const PoliciesTab = ({ policies, setPolicies, domainMappings, setDomainMappings,
   };
 
   const confirmDeletePolicy = async () => {
+    console.log('confirmDeletePolicy called with policyId:', currentPolicy?.policyId);
     if (!currentPolicy?.policyId) return;
+    if (currentPolicy.policyId === 'default-file-upload-policy' || currentPolicy.policyId === 'default-paste-policy') {
+      alert('Cannot delete default policies. Please create a new policy first.');
+      setShowConfirmDelete(false);
+      return;
+    }
 
     try {
       const updatedData = await StorageService.deletePolicy(
@@ -196,7 +202,7 @@ const PoliciesTab = ({ policies, setPolicies, domainMappings, setDomainMappings,
 
           <Card className="mb-3">
             <Card.Body>
-              <Card.Title>File Download Protection</Card.Title>
+              <Card.Title>File Download Protection (In Working)</Card.Title>
               <Card.Text>
                 Block downloading of files with sensitive extensions
               </Card.Text>

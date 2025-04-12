@@ -39,7 +39,7 @@ export class StorageService {
     const defaultPolicyNames = {
       'pasteProtection': 'Paste Protection',
       'fileUploadProtection': 'File Upload Protection',
-      'fileDownloadProtection': 'File Download Protection'
+      'fileDownloadProtection': 'File Download Protection (In working)'
     };
     
     
@@ -90,6 +90,11 @@ export class StorageService {
    */
   static async deletePolicy(policyId, allPolicies, allDomainMappings) {
     const policies = { ...allPolicies };
+
+    if (policyId == 'default-file-upload-policy' || policyId == 'default-paste-policy') {
+        // Do not delete default policies
+        return { policies, domainMappings: allDomainMappings };
+    }
     delete policies[policyId];
 
     // Remove policy from domain mappings

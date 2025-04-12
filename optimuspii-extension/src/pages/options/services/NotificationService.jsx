@@ -1,3 +1,5 @@
+import { StorageService } from "./StorageService";
+
 /**
  * Service for managing browser notifications in the extension
  */
@@ -39,6 +41,12 @@ export class NotificationService {
       const canShow = await this.canNotify();
       
       if (!canShow) return false;
+
+      let globalSettings = await StorageService.getGlobalSettings()
+      if (globalSettings?.enableNotifications === false) {
+        console.log('Notifications are disabled in settings');
+        return false;
+      }
       
       const notificationOptions = {
         body: message,

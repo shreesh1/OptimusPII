@@ -10,7 +10,6 @@ const PolicyEditor = ({ policy, onSave, onDelete, onCancel, onChange }) => {
   const [extensions, setExtensions] = useState([]);
 
   useEffect(() => {
-    console.log('PolicyEditor policy:', policy);
     // Initialize selected patterns
     if (policy.policyConfig?.enabledPatterns) {
       setSelectedPatterns(policy.policyConfig.enabledPatterns);
@@ -95,7 +94,7 @@ const PolicyEditor = ({ policy, onSave, onDelete, onCancel, onChange }) => {
             <option value="">Select Policy Type</option>
             <option value="pasteProtection">Paste Protection</option>
             <option value="fileUploadProtection">File Upload Protection</option>
-            <option value="fileDownloadProtection">File Download Protection</option>
+            <option value="fileDownloadProtection">File Download Protection (In Working)</option>
           </Form.Select>
         </Form.Group>
         

@@ -4,30 +4,26 @@
   <img src="assets/icons/icon.png" alt="OptimusPII Logo" width="150" />
 </p>
 
-Extension to block pasting PII (Personally Identifiable Information) in ChatGPT, Claude, and other web applications.
+A comprehensive security extension that protects against leaking PII (Personally Identifiable Information) through advanced detection, blocking, and redaction capabilities in ChatGPT, Claude, and other web applications, with customizable policies, multi-mode operation, and robust security monitoring features.
 
 ## Features
 
-- **Real-time Detection**: Automatically scans clipboard content when pasting to detect PII
-- Detects and blocks email addresses in pasted content
-- Detects and blocks credit card numbers in pasted content
-- Detects and blocks phone numbers in various international formats
-- Detects and blocks Social Security Numbers (SSNs) in pasted content
-- Detects and blocks passport numbers in standard formats
-- Detects and blocks Aadhaar numbers (Indian ID)
-- Detects and blocks PAN card numbers (Indian tax ID)
-- Detects and blocks passwords with common security requirements
-- Support for custom regex patterns to detect additional types of sensitive information
-- Paste Redacted option - replace sensitive information with sample/redacted values
-- Customizable URL monitoring - specify which websites to monitor
-- Toggle individual detection patterns on/off
-- Customizable sample replacement text for each pattern
-- Multiple operational modes:
-  - Interactive: Shows a popup with highlighted sensitive information and asks for confirmation
-  - Block and Alert: Automatically blocks and shows a notification
-  - Alert Only: Allows paste but shows a warning
-  - Silent Block: Blocks paste without notifications
-  - Disabled: Turns off all detection
+- **Intelligent PII Detection**: Real-time scanning for various PII types (emails, credit cards, phone numbers, SSNs, passport numbers, Aadhaar numbers, PAN cards, passwords) with support for custom regex patterns
+- **Flexible Protection Options**: Multiple operational modes including interactive confirmation, automatic blocking, alert-only, silent blocking, and redaction capabilities
+- **Customizable Security**: Tailor protection with website-specific rules, custom replacement text, and configurable URL monitoring
+- **Policy Management**: Create, apply and manage domain-specific security policies through an intuitive interface
+- **Comprehensive Monitoring**: Track security events through alerts dashboard, detailed activity logs, and configurable notification system
+- **Network Security**: Detection and warning system for potentially malicious phishing URLs and other threats
+
+## Development Features
+
+- **Testing Framework**: Built-in tools to validate detection patterns and extension functionality
+- **Webpack Configuration**: Optimized build process for both development and production environments
+- **Component-Based Architecture**: OOP-based structure for content script allowing easier maintenance and future enhancements
+- **React UI Framework**: Modern React-based options page with component structure for better development experience
+- **Theme Support**: Built-in light and dark theme support with Bootstrap styling
+- **Hot Reloading**: Development environment with watch mode for faster development cycles
+- **Cross-Browser Compatibility**: Configurations for both Chrome and Firefox development
 
 ## Screenshots
 
@@ -68,6 +64,7 @@ The extension monitors paste events on web pages and checks for patterns that ma
 - **PAN Card**: Indian tax ID format
 - **Passwords**: Common password patterns with symbols, numbers, and mixed case
 - **Custom Patterns**: User-defined regex patterns for detecting specific types of sensitive information
+- **Phishing URLs**: Detection of potentially malicious URLs with configurable sensitivity levels
 
 ## Developer Installation
 
@@ -116,3 +113,13 @@ Access the extension options to customize how OptimusPII works:
    - Provide a regex pattern to match the sensitive information
    - Set sample replacement text for when using "Paste Redacted" option
    - Enable/disable patterns as needed
+
+5. **Network Security Settings**: Configure protection against malicious content
+   - Adjust phishing URL detection sensitivity
+   - Control notification preferences for different security events
+   - Enable/disable specific security features
+
+6. **Policy-Based Protection**: Manage policies to control security behaviors
+   - Create policies to define specific detection and blocking rules
+   - Apply policies to specific websites or domains
+   - Enable, disable, or customize policies through the options interface

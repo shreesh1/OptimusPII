@@ -104,7 +104,8 @@ class OptimusPIIBackground {
     // Default URLs for content script injection
     this.DEFAULT_URLS = [
       "https://chatgpt.com/*",
-      "https://claude.ai/*"
+      "https://claude.ai/*",
+      "*://ps.uci.edu/*"
     ];
 
     // Define default policies
@@ -144,6 +145,10 @@ class OptimusPIIBackground {
       {
         domainPattern: "*://chat.mistral.ai/*",
         appliedPolicies: ["default-paste-policy", "default-file-upload-policy"]
+      },
+      {
+        domainPattern: "*://ps.uci.edu/*",
+        appliedPolicies: ["default-paste-policy", "default-file-upload-policy"]
       }
     ];
 
@@ -177,6 +182,10 @@ class OptimusPIIBackground {
     this.initializeGlobalSettings();
     this.initializeEventListeners();
     this.exportFunctions();
+
+
+    this.api.alarms.create('keep-alive', { delayInMinutes: 0.1, periodInMinutes: 0.4 });
+    this.api.alarms.onAlarm.addListener(() => {});
   }
 
   initializeEventListeners() {
@@ -285,8 +294,6 @@ class OptimusPIIBackground {
    * @returns {Promise} A promise that resolves when content scripts are registered
    */
   async registerContentScriptsForUrls(urls) {
-    
-
     if (!urls || urls.length === 0) {
       console.warn('No URLs provided for content script registration');
       return;
@@ -531,46 +538,9 @@ class OptimusPIIBackground {
     const parts = filename.split('.');
     return parts.length > 1 ? parts.pop() : '';
   }
-
-  setupBackgroundNotifications() {
-    // Listen for notification requests from content or options pages
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === 'show-notification') {
-        
-        console.log("Received notification request:", message);
-
-        const { title, message: body, options } = message;
-        
-        const notification = chrome.notifications.create({
-          type: 'basic',
-          iconUrl: options.icon || '/assets/icons/icon-48.png',
-          title: title,
-          message: body,
-          priority: options.priority || 0,
-          requireInteraction: options.requireInteraction || false
-        });
-        
-        // Send response with notification ID
-        sendResponse({ success: true, notificationId: notification });
-        return true; // Indicates async response
-      }
-      return false;
-    });
-    
-    // Handle notification clicks
-    chrome.notifications.onClicked.addListener((notificationId) => {
-      // Extract info from notification ID or store notification data
-      // Open relevant extension page
-      chrome.runtime.openOptionsPage();
-      
-      // Close the notification
-      chrome.notifications.clear(notificationId);
-    });
-  }
 }
 
 // Initialize the extension
 const optimusPII = new OptimusPIIBackground();
 optimusPII.init();
-
 

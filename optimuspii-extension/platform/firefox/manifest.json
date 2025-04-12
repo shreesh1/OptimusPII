@@ -16,7 +16,8 @@
     "scripting",
     "clipboardRead",
     "webNavigation",
-    "notifications"
+    "notifications",
+    "alarms"
   ],
   "web_accessible_resources": [
     {

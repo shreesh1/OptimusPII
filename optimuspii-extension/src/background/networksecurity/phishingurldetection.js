@@ -261,7 +261,7 @@ export class PhishingURLDetection {
   logDetection(result) {
     // Create an alert
     AlertService.addPhishingAlert(
-      'Potential Phishing URL Detected',
+      `Potential Phishing URL Detected ${result.url}%`,
       `A phishing attempt was detected with ${result.confidence}% confidence.`,
       result.url,
       `Score: ${result.phishingScore.toFixed(3)}, Action: ${result.action}`

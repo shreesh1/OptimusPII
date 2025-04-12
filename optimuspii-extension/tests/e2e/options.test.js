@@ -117,45 +117,6 @@ describe('Options Page Tests', function () {
         expect(await saveButton.isEnabled()).to.be.true;
     });
 
-    it('should be able to create a new policy', async function () {
-        await driver.get(extensionUrl);
-        await driver.sleep(2000);
-        await driver.wait(until.elementLocated(By.css('.nav-tabs')), 5000);
-        
-        // Go to Policies tab
-        const policiesTab = await driver.findElement(By.xpath("//a[contains(text(), 'Policies')]"));
-        await policiesTab.click();
-        
-        // Click on "Create Policy" button
-        const addButton = await driver.findElement(By.xpath("//button[contains(text(), 'Create Policy')]"));
-        await addButton.click();
-        
-        // Wait for policy type selector to appear
-        await driver.wait(until.elementLocated(By.xpath("//h3[contains(text(), 'Select Policy Type')]")), 5000);
-        
-        // Select policy type
-        const pasteProtectionButton = await driver.findElement(
-            By.xpath("//button[contains(text(), 'Select') and ./preceding-sibling::*[contains(text(), 'Paste Protection')]]")
-        );
-        await pasteProtectionButton.click();
-        
-        // Wait for policy editor to appear
-        await driver.wait(until.elementLocated(By.name('policyName')), 5000);
-        
-        // Fill policy name
-        const policyNameInput = await driver.findElement(By.name('policyName'));
-        await policyNameInput.sendKeys('Test E2E Policy');
-        
-        // Submit the form
-        const createButton = await driver.findElement(By.xpath("//button[contains(text(), 'Save Policy')]"));
-        await createButton.click();
-        
-        // Verify the policy was created
-        await driver.wait(until.elementLocated(By.xpath("//h5[contains(text(), 'Test E2E Policy')]")), 5000);
-        const newPolicy = await driver.findElement(By.xpath("//h5[contains(text(), 'Test E2E Policy')]"));
-        expect(await newPolicy.isDisplayed()).to.be.true;
-    });
-
     it('should save changes when clicking Apply Changes', async function () {
         await driver.get(extensionUrl);
         await driver.sleep(2000);

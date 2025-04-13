@@ -90,8 +90,12 @@ export class StorageService {
    */
   static async deletePolicy(policyId, allPolicies, allDomainMappings) {
     const policies = { ...allPolicies };
-    delete policies[policyId];
-
+    if (!policies[policyId]) {
+      return { policies, domainMappings: allDomainMappings };
+    }
+    if (policyId == 'default-file-upload-policy' || policyId == 'default-paste-policy') {
+      return { policies, domainMappings: allDomainMappings };
+    }
     // Remove policy from domain mappings
     const updatedDomainMappings = allDomainMappings.map(mapping => ({
       ...mapping,

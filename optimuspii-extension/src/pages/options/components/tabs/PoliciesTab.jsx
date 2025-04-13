@@ -75,6 +75,11 @@ const PoliciesTab = ({ policies, setPolicies, domainMappings, setDomainMappings,
 
   const confirmDeletePolicy = async () => {
     if (!currentPolicy?.policyId) return;
+    if (currentPolicy.policyId === 'default-file-upload-policy' || currentPolicy.policyId === 'default-paste-policy') {
+      alert('Cannot delete default policies. Please create a new policy first.');
+      setShowConfirmDelete(false);
+      return;
+    }
 
     try {
       const updatedData = await StorageService.deletePolicy(

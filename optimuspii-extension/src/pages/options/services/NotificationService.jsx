@@ -39,6 +39,12 @@ export class NotificationService {
       const canShow = await this.canNotify();
       
       if (!canShow) return false;
+
+      const result = await chrome.storage.local.get('globalSettings');
+      const globalSettings = result.globalSettings || {};
+      if (globalSettings && globalSettings?.enableNotifications === false) {
+        return false;
+      }
       
       const notificationOptions = {
         body: message,

@@ -10,12 +10,13 @@
     "96": "icon/icon.png"
   },
   "permissions": [
-    "scripting",
     "storage",
     "activeTab",
     "contextMenus",
     "scripting",
-    "clipboardRead"
+    "clipboardRead",
+    "webNavigation",
+    "notifications"
   ],
   "host_permissions": [
     "*://*/*"
@@ -38,7 +39,7 @@
     "open_in_tab": true
   },
   "background": {
-    "scripts": ["background.js"]
+    "service_worker": "background.js"
   },
   "action": {
     "default_icon": {

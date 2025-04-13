@@ -1,0 +1,39 @@
+.global-settings-tab {
+    padding: 0 10px;
+  }
+  
+  .global-settings-tab h3 {
+    margin-bottom: 20px;
+  }
+  
+  .global-settings-tab .card-header h4 {
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0;
+  }
+  
+  .global-settings-tab .list-group-item {
+    padding: 15px;
+  }
+  
+  .global-settings-tab .form-select {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+  }
+  
+  .global-settings-tab .setting-description {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 0;
+    margin-top: 5px;
+  }
+  
+  .global-settings-tab .setting-title {
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+  
+  .feature-status {
+    width: 150px;
+    text-align: right;
+  }

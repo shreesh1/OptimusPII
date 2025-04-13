@@ -1,0 +1,266 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    padding: 40px;
+    max-width: 800px;
+    margin: 0 auto;
+    color: #333;
+    line-height: 1.5;
+    background-color: #fafafa;
+  }
+  
+  .options-container {
+    width: 100%;
+  }
+  
+  .options-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .options-header h1 {
+    font-weight: 400;
+    color: #222;
+    font-size: 28px;
+    letter-spacing: -0.5px;
+    margin: 0;
+  }
+  
+  .header-actions {
+    display: flex;
+    align-items: center;
+  }
+  
+  .unsaved-indicator {
+    font-size: 14px;
+    color: #d32f2f;
+    font-weight: 500;
+    margin-right: 12px;
+    vertical-align: middle;
+  }
+  
+  .save-button {
+    padding: 10px 20px;
+    background-color: #0078d7;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: background-color 0.2s, transform 0.2s;
+  }
+  
+  .save-button:hover:not(:disabled) {
+    background-color: #0069c0;
+  }
+  
+  .save-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  
+  .save-button.has-changes {
+    animation: pulse 2s infinite;
+    transform: scale(1.03);
+  }
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(0, 120, 215, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 6px rgba(0, 120, 215, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(0, 120, 215, 0);
+    }
+  }
+  
+  .tab-content-container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    min-height: 400px;
+  }
+  
+  .tab-content {
+    display: block;
+  }
+  
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #666;
+    font-size: 16px;
+  }
+  
+  /* Success message */
+  .success-message {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #4caf50;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    opacity: 1;
+    transition: opacity 0.3s;
+    z-index: 1000;
+  }
+  
+  .success-message.hide {
+    opacity: 0;
+  }
+
+  /* Base styling */
+body {
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Light theme - default */
+body.light-theme,
+.light-theme {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --border-color: #dee2e6;
+  --accent-color: #0d6efd;
+  --tab-active-bg: #fff;
+  --tab-active-border: #dee2e6;
+  --tab-inactive-bg: #f8f9fa;
+  --danger-color: #dc3545;
+  --success-color: #28a745;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Dark theme */
+body.dark-theme,
+.dark-theme {
+  --bg-primary: #212529;
+  --bg-secondary: #343a40;
+  --text-primary: #f8f9fa;
+  --text-secondary: #adb5bd;
+  --border-color: #495057;
+  --accent-color: #007bff;
+  --tab-active-bg: #343a40;
+  --tab-active-border: #495057;
+  --tab-inactive-bg: #212529;
+  --danger-color: #dc3545;
+  --success-color: #28a745;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Apply theme variables to components */
+.options-page {
+  min-height: 100vh;
+}
+
+.header {
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+  padding: 1rem 0;
+}
+
+.header h1 {
+  color: var(--text-primary);
+}
+
+.footer {
+  border-top: 1px solid var(--border-color);
+  margin-top: 1.5rem;
+  padding: 1rem 0;
+}
+
+/* Tab styling */
+.nav-tabs .nav-link {
+  color: var(--text-secondary);
+  background-color: var(--tab-inactive-bg);
+  border-color: var(--border-color);
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--text-primary);
+  background-color: var(--tab-active-bg);
+  border-color: var(--tab-active-border);
+  border-bottom-color: transparent;
+}
+
+/* Card styling */
+.card {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.card-header {
+  background-color: var(--bg-secondary);
+  border-bottom-color: var(--border-color);
+}
+
+/* Form styling */
+.form-control, .form-select {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark-theme .form-control,
+.dark-theme .form-select {
+  background-color: var(--bg-secondary);
+}
+
+/* Messages */
+.unsaved-changes-alert {
+  color: var(--danger-color);
+}
+
+.save-success-message {
+  color: var(--success-color);
+}
+
+/* Theme toggle styling */
+.theme-toggle {
+  margin-left: 1rem;
+}
+
+/* Additional Bootstrap component overrides */
+.dark-theme .modal-content {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.dark-theme .dropdown-menu {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-theme .dropdown-item {
+  color: var(--text-primary);
+}
+
+.dark-theme .dropdown-item:hover {
+  background-color: var(--bg-primary);
+}
+
+.policy-details .badge {
+  font-size: 0.8rem;
+  padding: 0.4em 0.8em;
+}
+
+.policy-status .badge {
+  font-size: 0.75rem;
+}

@@ -1,0 +1,52 @@
+{
+  "name": "optimuspii-extension",
+  "version": "1.0.0",
+  "description": "<p align=\"center\">\r   <img src=\"icon/icon.png\" alt=\"OptimusPII Logo\" width=\"150\" />\r </p>",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "build:chromium": "webpack --env browser=chromium --config webpack.prod.js",
+    "build:firefox": "webpack --env browser=firefox --config webpack.prod.js",
+    "clean": "rimraf build",
+    "build": "npm run clean && npm run build:chromium && npm run build:firefox",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:firefox": "webpack --env browser=firefox --watch --config webpack.dev.js",
+    "dev:chrome": "webpack --env browser=chromium --watch --config webpack.dev.js",
+    "dev": "npm run dev:firefox && npm run dev:chromium",
+    "test:e2e": "mocha tests/e2e/*.test.js",
+    "test:e2e:watch": "mocha tests/e2e/*.test.js --watch",
+    "test:options": "mocha tests/e2e/paste.test.js --timeout 30000"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.26.10",
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
+    "babel-loader": "^10.0.0",
+    "copy-webpack-plugin": "^13.0.0",
+    "css-loader": "^7.1.2",
+    "css-minimizer-webpack-plugin": "^7.0.2",
+    "firefox-profile": "^4.7.0",
+    "html-webpack-plugin": "^5.6.3",
+    "mocha": "^11.1.0",
+    "rimraf": "^6.0.1",
+    "selenium-webdriver": "^4.31.0",
+    "style-loader": "^4.0.0",
+    "terser-webpack-plugin": "^5.3.14",
+    "web-ext": "^8.5.0",
+    "webextension-polyfill": "^0.12.0",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-merge": "^6.0.1"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "chai": "^4.3.4",
+    "react": "^19.0.0",
+    "react-bootstrap": "^2.10.9",
+    "react-dom": "^19.0.0"
+  }
+}

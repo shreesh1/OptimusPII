@@ -1,7 +1,7 @@
 # OptimusPII
 
 <p align="center">
-  <img src="optimuspii-extension/assets/icons/icon.png" alt="OptimusPII Logo" width="150" />
+  <img src="assets/icons/icon.png" alt="OptimusPII Logo" width="150" />
 </p>
 
 A comprehensive security extension that protects against leaking PII (Personally Identifiable Information) through advanced detection, blocking, and redaction capabilities in ChatGPT, Claude, and other web applications, with customizable policies, multi-mode operation, and robust security monitoring features.

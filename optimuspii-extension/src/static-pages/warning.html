@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Warning - OptimusPII</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f8f8;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .header img {
+      width: 48px;
+      height: 48px;
+      margin-right: 15px;
+    }
+    h1 {
+      color: #d32f2f;
+      margin: 0;
+      font-size: 24px;
+    }
+    .warning-details {
+      background-color: #fef6f6;
+      border-left: 4px solid #d32f2f;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+    }
+    .url {
+      word-break: break-all;
+      font-family: monospace;
+      padding: 10px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      margin: 15px 0;
+    }
+    .confidence {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .confidence-high {
+      color: #d32f2f;
+    }
+    .confidence-medium {
+      color: #f57c00;
+    }
+    .confidence-low {
+      color: #689f38;
+    }
+    .action-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 25px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    #proceed-btn {
+      background-color: #fff;
+      color: #d32f2f;
+      border: 2px solid #d32f2f;
+    }
+    #block-btn {
+      background-color: #2196f3;
+      color: white;
+    }
+    .footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Potential Phishing Website Blocked</h1>
+    </div>
+    <div class="warning-details">
+      <p>OptimusPII has detected that this website may be attempting to steal your personal information.</p>
+      <div class="url" id="dangerous-url"></div>
+      <div class="confidence" id="confidence-level"></div>
+    </div>
+    
+    <p>Phishing websites impersonate trusted sites to steal your personal information, login credentials, or financial details.</p>
+    
+    <div class="action-buttons">
+      <button id="proceed-btn">Proceed Anyway (Unsafe)</button>
+      <button id="block-btn">Go to Safety (Google)</button>
+    </div>
+    
+    <div class="footer">
+      <p>OptimusPII - Protecting your personal information</p>
+    </div>
+  </div>
+
+  <!-- Replace inline script with reference to external script -->
+  <script src="warning.js"></script>
+</body>
+</html>

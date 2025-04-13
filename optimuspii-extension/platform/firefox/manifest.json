@@ -10,12 +10,26 @@
     "96": "icon/icon.png"
   },
   "permissions": [
-    "scripting",
     "storage",
     "activeTab",
     "contextMenus",
     "scripting",
-    "clipboardRead"
+    "clipboardRead",
+    "webNavigation",
+    "notifications",
+    "alarms"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "warning.html",
+        "assets/icons/icon.png",
+        "warning.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
   ],
   "host_permissions": [
     "*://*/*"
@@ -34,11 +48,13 @@
     }
   ],
   "options_ui": {
-    "page": "options/options.html",
+    "page": "options.html",
     "open_in_tab": true
   },
   "background": {
-    "service_worker": "background.js"
+    "scripts": [
+      "background.js"
+    ]
   },
   "action": {
     "default_icon": {
@@ -47,6 +63,11 @@
       "32": "icon/icon.min.png"
     },
     "default_title": "OptimusPII",
-    "default_popup": "options/options.html"
+    "default_popup": "options.html"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{ae50d192-ea57-4d28-a49a-46b39241df21}"
+    }
   }
 }
